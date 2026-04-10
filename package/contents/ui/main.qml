@@ -352,6 +352,16 @@ PlasmoidItem {
         return ""
     }
 
+    function isEventDeclined(event) {
+        if (!event || !event.attendees) return false
+        for (var i = 0; i < event.attendees.length; i++) {
+            var attendee = event.attendees[i]
+            if (attendee.self && attendee.responseStatus === "declined")
+                return true
+        }
+        return false
+    }
+
     function getDateLabel(dateStr) {
         var today = new Date(); today.setHours(0, 0, 0, 0)
         var tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1)
@@ -372,7 +382,7 @@ PlasmoidItem {
     function refreshTimeSensitiveState() {
         var now = Date.now()
         var todayStr = new Date().toISOString().slice(0, 10)
-        var todayCount = 0
+        var todayUpcomingCount = 0
         var earliest = null
 
         for (var i = 0; i < meetingsModel.count; i++) {
@@ -387,9 +397,16 @@ PlasmoidItem {
             meetingsModel.setProperty(i, "minutesUntil", minutesUntil)
             meetingsModel.setProperty(i, "dateLabel", root.getDateLabel(dateStr))
 
-            if (dateStr === todayStr) todayCount++
+            if (dateStr === todayStr && !isPast && !m.isCancelled && !m.isDeclined) {
+                todayUpcomingCount++
+            }
 
-            if (!isPast && (earliest === null || startMs < new Date(earliest.startIso).getTime())) {
+            if (dateStr === todayStr
+                    && !isPast
+                    && !m.isCancelled
+                    && !m.isDeclined
+                    && m.meetUrl !== ""
+                    && (earliest === null || startMs < new Date(earliest.startIso).getTime())) {
                 earliest = {
                     title: m.title,
                     startTime: m.startTime,
@@ -400,7 +417,7 @@ PlasmoidItem {
             }
         }
 
-        root.hasMeetingsToday = todayCount > 0
+        root.hasMeetingsToday = todayUpcomingCount > 0
         root.nextMeeting = earliest
     }
 
@@ -410,7 +427,7 @@ PlasmoidItem {
 
         var todayStr  = new Date().toISOString().slice(0, 10)
         var now       = Date.now()
-        var todayCount = 0
+        var todayUpcomingCount = 0
         var earliest  = null   // next upcoming meeting with a Meet URL
 
         for (var i = 0; i < items.length; i++) {
@@ -421,11 +438,15 @@ PlasmoidItem {
             var endDt    = new Date(ev.end.dateTime)
             var dateStr  = startDt.toISOString().slice(0, 10)
             var isPast   = endDt.getTime() < now
+            var isCancelled = ev.status === "cancelled"
+            var isDeclined = root.isEventDeclined(ev)
             var minUntil = isPast ? -1 : Math.max(0, Math.round((startDt.getTime() - now) / 60000))
             var meetUrl  = root.getMeetingUrl(ev)
             var calUrl   = ev.htmlLink || ""
 
-            if (dateStr === todayStr) todayCount++
+            if (dateStr === todayStr && !isPast && !isCancelled && !isDeclined) {
+                todayUpcomingCount++
+            }
 
             meetingsModel.append({
                 eventId:   ev.id || String(i),
@@ -439,17 +460,24 @@ PlasmoidItem {
                 meetUrl:   meetUrl,
                 calUrl:    calUrl,
                 isPast:    isPast,
+                isCancelled: isCancelled,
+                isDeclined: isDeclined,
                 minutesUntil: isPast ? -1 : minUntil
             })
 
             // Track earliest upcoming meeting that has a video link
-            if (!isPast && (earliest === null || startDt < new Date(earliest.startIso))) {
+            if (dateStr === todayStr
+                    && !isPast
+                    && !isCancelled
+                    && !isDeclined
+                    && meetUrl !== ""
+                    && (earliest === null || startDt < new Date(earliest.startIso))) {
                 earliest = { title: ev.summary || "", startTime: root.formatHHMM(ev.start.dateTime),
                              meetUrl: meetUrl, calUrl: calUrl, startIso: ev.start.dateTime }
             }
         }
 
-        root.hasMeetingsToday = todayCount > 0
+        root.hasMeetingsToday = todayUpcomingCount > 0
         root.nextMeeting      = earliest
         root.refreshTimeSensitiveState()
         root.checkNotifications()
@@ -470,6 +498,7 @@ PlasmoidItem {
 
         for (var i = 0; i < meetingsModel.count; i++) {
             var m = meetingsModel.get(i)
+            if (m.isCancelled || m.isDeclined) continue
             var endMs = new Date(m.endIso).getTime()
             if (endMs < now) continue
             if (root._notifiedIds[m.eventId]) continue

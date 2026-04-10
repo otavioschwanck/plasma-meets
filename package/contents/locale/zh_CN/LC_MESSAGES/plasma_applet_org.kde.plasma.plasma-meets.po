@@ -165,6 +165,12 @@ msgstr "打开 Google Meet"
 msgid "Open in Google Calendar"
 msgstr "在 Google 日历中打开"
 
+msgid "Cancelled"
+msgstr "已取消"
+
+msgid "Declined"
+msgstr "已拒绝"
+
 msgid "No meetings today"
 msgstr "今天没有会议"
 

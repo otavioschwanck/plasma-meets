@@ -157,6 +157,8 @@ Item {
                     meetUrl:      model.meetUrl
                     calUrl:       model.calUrl
                     isPast:       model.isPast
+                    isCancelled:  model.isCancelled
+                    isDeclined:   model.isDeclined
                     minutesUntil: model.minutesUntil
                 }
 

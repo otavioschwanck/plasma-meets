@@ -15,10 +15,14 @@ Item {
     property string meetUrl:      ""
     property string calUrl:       ""
     property bool   isPast:       false
+    property bool   isCancelled:  false
+    property bool   isDeclined:   false
     property int    minutesUntil: -1   // <0 = past/N/A, 0+ = minutes remaining
 
     // Badge: "Agora" | "em Xmin" | ""
     readonly property string badgeText: {
+        if (isCancelled) return i18n("Cancelled")
+        if (isDeclined) return i18n("Declined")
         if (isPast || minutesUntil < 0) return ""
         if (minutesUntil === 0)         return i18n("Now")
         if (minutesUntil <= 30)         return i18n("in %1 min", minutesUntil)
@@ -60,7 +64,7 @@ Item {
             width:  7
             height: 7
             radius: 4
-            color:  meetItem.isPast
+            color:  (meetItem.isPast || meetItem.isCancelled || meetItem.isDeclined)
                     ? Kirigami.Theme.disabledTextColor
                     : (meetItem.isSoon || meetItem.isNow)
                       ? Kirigami.Theme.positiveTextColor
@@ -71,20 +75,20 @@ Item {
         PlasmaComponents3.Label {
             text: meetItem.startTime + "–" + meetItem.endTime
             font.pointSize: Kirigami.Theme.smallFont.pointSize
-            color: meetItem.isPast
+            color: (meetItem.isPast || meetItem.isCancelled || meetItem.isDeclined)
                    ? Kirigami.Theme.disabledTextColor
                    : Kirigami.Theme.textColor
-            font.strikeout: meetItem.isPast
+            font.strikeout: meetItem.isPast || meetItem.isCancelled || meetItem.isDeclined
             Layout.minimumWidth: Kirigami.Units.gridUnit * 5
         }
 
         // Title
         PlasmaComponents3.Label {
             text:  meetItem.title
-            color: meetItem.isPast
+            color: (meetItem.isPast || meetItem.isCancelled || meetItem.isDeclined)
                    ? Kirigami.Theme.disabledTextColor
                    : Kirigami.Theme.textColor
-            font.strikeout: meetItem.isPast
+            font.strikeout: meetItem.isPast || meetItem.isCancelled || meetItem.isDeclined
             elide: Text.ElideRight
             Layout.fillWidth: true
         }
@@ -99,6 +103,10 @@ Item {
                      ? Qt.rgba(Kirigami.Theme.positiveTextColor.r,
                                Kirigami.Theme.positiveTextColor.g,
                                Kirigami.Theme.positiveTextColor.b, 0.2)
+                     : (meetItem.isCancelled || meetItem.isDeclined)
+                     ? Qt.rgba(Kirigami.Theme.disabledTextColor.r,
+                               Kirigami.Theme.disabledTextColor.g,
+                               Kirigami.Theme.disabledTextColor.b, 0.15)
                      : Qt.rgba(Kirigami.Theme.neutralTextColor.r,
                                Kirigami.Theme.neutralTextColor.g,
                                Kirigami.Theme.neutralTextColor.b, 0.2)
@@ -107,14 +115,16 @@ Item {
                 id: badgeLabel
                 anchors.centerIn: parent
                 text:  meetItem.badgeText
-                color: meetItem.isNow
+                color: (meetItem.isCancelled || meetItem.isDeclined)
+                       ? Kirigami.Theme.disabledTextColor
+                       : meetItem.isNow
                        ? Kirigami.Theme.positiveTextColor
                        : Kirigami.Theme.neutralTextColor
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
-                font.bold: meetItem.isNow
+                font.bold: meetItem.isNow && !meetItem.isCancelled && !meetItem.isDeclined
 
                 SequentialAnimation on opacity {
-                    running: meetItem.isNow
+                    running: meetItem.isNow && !meetItem.isCancelled && !meetItem.isDeclined
                     loops:   Animation.Infinite
                     NumberAnimation { to: 0.4; duration: 800 }
                     NumberAnimation { to: 1.0; duration: 800 }
@@ -132,7 +142,7 @@ Item {
             // Open Google Meet
             PlasmaComponents3.ToolButton {
                 id: meetButton
-                visible:    meetItem.meetUrl !== ""
+                visible:    meetItem.meetUrl !== "" && !meetItem.isCancelled && !meetItem.isDeclined
                 icon.name:  "open-link"
                 icon.color: meetButton.hovered ? Kirigami.Theme.textColor : Qt.lighter(Kirigami.Theme.textColor, 1.2)
                 display:    PlasmaComponents3.AbstractButton.IconOnly

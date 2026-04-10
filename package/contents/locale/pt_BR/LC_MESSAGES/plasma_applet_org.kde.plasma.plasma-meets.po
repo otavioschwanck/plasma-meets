@@ -165,6 +165,12 @@ msgstr "Abrir Google Meet"
 msgid "Open in Google Calendar"
 msgstr "Abrir no Google Agenda"
 
+msgid "Cancelled"
+msgstr "Cancelada"
+
+msgid "Declined"
+msgstr "Recusada"
+
 msgid "No meetings today"
 msgstr "Sem reuniões hoje"
 
