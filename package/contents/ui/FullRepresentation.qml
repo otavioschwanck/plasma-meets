@@ -101,7 +101,7 @@ Item {
                     text: i18n("Configure...")
                     Layout.alignment: Qt.AlignHCenter
                     icon.name: "configure"
-                    onClicked: plasmoid.action("configure").trigger()
+                    onClicked: Plasmoid.internalAction("configure").trigger()
                 }
             }
         }

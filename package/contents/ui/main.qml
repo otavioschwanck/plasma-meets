@@ -146,7 +146,11 @@ PlasmoidItem {
         interval: 60000
         running:  root.accessToken !== ""
         repeat:   true
-        onTriggered: root.checkNotifications()
+        triggeredOnStart: true
+        onTriggered: {
+            root.refreshTimeSensitiveState()
+            root.checkNotifications()
+        }
     }
 
     // Device-flow poll timer (stopped by default)
@@ -365,6 +369,41 @@ PlasmoidItem {
         return Qt.formatTime(new Date(isoString), "HH:mm")
     }
 
+    function refreshTimeSensitiveState() {
+        var now = Date.now()
+        var todayStr = new Date().toISOString().slice(0, 10)
+        var todayCount = 0
+        var earliest = null
+
+        for (var i = 0; i < meetingsModel.count; i++) {
+            var m = meetingsModel.get(i)
+            var startMs = new Date(m.startIso).getTime()
+            var endMs = new Date(m.endIso).getTime()
+            var isPast = endMs < now
+            var minutesUntil = isPast ? -1 : Math.max(0, Math.round((startMs - now) / 60000))
+            var dateStr = new Date(m.startIso).toISOString().slice(0, 10)
+
+            meetingsModel.setProperty(i, "isPast", isPast)
+            meetingsModel.setProperty(i, "minutesUntil", minutesUntil)
+            meetingsModel.setProperty(i, "dateLabel", root.getDateLabel(dateStr))
+
+            if (dateStr === todayStr) todayCount++
+
+            if (!isPast && (earliest === null || startMs < new Date(earliest.startIso).getTime())) {
+                earliest = {
+                    title: m.title,
+                    startTime: m.startTime,
+                    meetUrl: m.meetUrl,
+                    calUrl: m.calUrl,
+                    startIso: m.startIso
+                }
+            }
+        }
+
+        root.hasMeetingsToday = todayCount > 0
+        root.nextMeeting = earliest
+    }
+
     // ── Process API response → populate ListModel ─────────────────────────────
     function processMeetings(items) {
         meetingsModel.clear()
@@ -382,7 +421,7 @@ PlasmoidItem {
             var endDt    = new Date(ev.end.dateTime)
             var dateStr  = startDt.toISOString().slice(0, 10)
             var isPast   = endDt.getTime() < now
-            var minUntil = Math.round((startDt.getTime() - now) / 60000)
+            var minUntil = isPast ? -1 : Math.max(0, Math.round((startDt.getTime() - now) / 60000))
             var meetUrl  = root.getMeetingUrl(ev)
             var calUrl   = ev.htmlLink || ""
 
@@ -412,6 +451,8 @@ PlasmoidItem {
 
         root.hasMeetingsToday = todayCount > 0
         root.nextMeeting      = earliest
+        root.refreshTimeSensitiveState()
+        root.checkNotifications()
     }
 
     // ── Notification checker (called every minute) ────────────────────────────
@@ -429,7 +470,8 @@ PlasmoidItem {
 
         for (var i = 0; i < meetingsModel.count; i++) {
             var m = meetingsModel.get(i)
-            if (m.isPast) continue
+            var endMs = new Date(m.endIso).getTime()
+            if (endMs < now) continue
             if (root._notifiedIds[m.eventId]) continue
 
             var startMs  = new Date(m.startIso).getTime()
@@ -453,6 +495,7 @@ PlasmoidItem {
     Component.onCompleted: {
         if (root.accessToken !== "") {
             root.fetchEvents()
+            root.refreshTimeSensitiveState()
         }
     }
 }
