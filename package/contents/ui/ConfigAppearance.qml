@@ -2,20 +2,42 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
+import org.kde.kcmutils as KCM
+import org.kde.plasma.plasmoid
 
-Item {
+KCM.SimpleKCM {
     id: configPage
 
-    property string cfg_taskbarMode:   plasmoid.configuration.taskbarMode
-    property int    cfg_titleMaxChars: plasmoid.configuration.titleMaxChars
-    property string cfg_iconNoMeet:    plasmoid.configuration.iconNoMeet
-    property string cfg_iconHasMeet:   plasmoid.configuration.iconHasMeet
+    property string cfg_clientId:         ""
+    property string cfg_clientSecret:     ""
+    property string cfg_accessToken:      ""
+    property string cfg_refreshToken:     ""
+    property string cfg_tokenExpiry:      "0"
+    property string cfg_accountEmail:     ""
+    property int cfg_daysAhead:           7
+    property int cfg_notifyMinutes:       10
+    property int cfg_syncIntervalMin:     5
+    property string cfg_taskbarMode:   Plasmoid.configuration.taskbarMode
+    property int    cfg_titleMaxChars: Plasmoid.configuration.titleMaxChars
+    property string cfg_iconNoMeet:    Plasmoid.configuration.iconNoMeet
+    property string cfg_iconHasMeet:   Plasmoid.configuration.iconHasMeet
 
-    implicitHeight: form.implicitHeight + Kirigami.Units.largeSpacing * 2
+    property string cfg_clientIdDefault:     ""
+    property string cfg_clientSecretDefault: ""
+    property string cfg_accessTokenDefault:  ""
+    property string cfg_refreshTokenDefault: ""
+    property string cfg_tokenExpiryDefault:  "0"
+    property string cfg_accountEmailDefault: ""
+    property int cfg_daysAheadDefault:       7
+    property int cfg_notifyMinutesDefault:   10
+    property int cfg_syncIntervalMinDefault: 5
+    property string cfg_taskbarModeDefault:  "time"
+    property int cfg_titleMaxCharsDefault:   30
+    property string cfg_iconNoMeetDefault:   "meeting-organizer"
+    property string cfg_iconHasMeetDefault:  "meeting-attending"
 
     Kirigami.FormLayout {
         id: form
-        anchors { top: parent.top; left: parent.left; right: parent.right }
 
         // ── Taskbar ───────────────────────────────────────────────────────────
         Kirigami.Separator { Kirigami.FormData.label: i18n("Taskbar") }

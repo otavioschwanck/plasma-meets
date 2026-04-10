@@ -2,15 +2,31 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
+import org.kde.kcmutils as KCM
+import org.kde.plasma.plasmoid
 
-Item {
+KCM.SimpleKCM {
     id: configPage
 
-    property int cfg_daysAhead:       plasmoid.configuration.daysAhead
-    property int cfg_notifyMinutes:   plasmoid.configuration.notifyMinutes
-    property int cfg_syncIntervalMin: plasmoid.configuration.syncIntervalMin
+    property string cfg_clientId:         Plasmoid.configuration.clientId
+    property string cfg_clientSecret:     Plasmoid.configuration.clientSecret
+    property string cfg_accessToken:      Plasmoid.configuration.accessToken
+    property string cfg_refreshToken:     Plasmoid.configuration.refreshToken
+    property string cfg_tokenExpiry:      Plasmoid.configuration.tokenExpiry
+    property string cfg_accountEmail:     Plasmoid.configuration.accountEmail
+    property int cfg_daysAhead:       Plasmoid.configuration.daysAhead
+    property int cfg_notifyMinutes:   Plasmoid.configuration.notifyMinutes
+    property int cfg_syncIntervalMin: Plasmoid.configuration.syncIntervalMin
 
-    implicitHeight: form.implicitHeight + Kirigami.Units.largeSpacing * 2
+    property string cfg_clientIdDefault:     ""
+    property string cfg_clientSecretDefault: ""
+    property string cfg_accessTokenDefault:  ""
+    property string cfg_refreshTokenDefault: ""
+    property string cfg_tokenExpiryDefault:  "0"
+    property string cfg_accountEmailDefault: ""
+    property int cfg_daysAheadDefault:       7
+    property int cfg_notifyMinutesDefault:   10
+    property int cfg_syncIntervalMinDefault: 5
 
     QtObject {
         id: deviceFlow
@@ -20,16 +36,25 @@ Item {
         property string deviceCode:      ""
         property string errorMsg:        ""
 
+        function trimmed(value) {
+            return (value || "").trim()
+        }
+
         function start() {
             errorMsg = ""
-            var id = plasmoid.configuration.clientId
+            var id = trimmed(configPage.cfg_clientId)
+            configPage.cfg_clientId = id
+            configPage.cfg_clientSecret = trimmed(configPage.cfg_clientSecret)
             if (!id) { errorMsg = "Enter Client ID first."; return }
+            console.warn("[plasma-meets] Starting device flow. clientIdLength=" + id.length +
+                         " suffix=" + id.slice(Math.max(0, id.length - 20)))
             var xhr = new XMLHttpRequest()
             xhr.open("POST", "https://oauth2.googleapis.com/device/code")
             xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
             xhr.onreadystatechange = function() {
                 if (xhr.readyState !== XMLHttpRequest.DONE) return
                 if (xhr.status === 200) {
+                    console.warn("[plasma-meets] device/code OK")
                     var d = JSON.parse(xhr.responseText)
                     deviceFlow.deviceCode      = d.device_code
                     deviceFlow.userCode        = d.user_code
@@ -39,13 +64,15 @@ Item {
                     pollTimer.start()
                 } else {
                     var msg = "Error " + xhr.status
+                    console.warn("[plasma-meets] device/code FAILED status=" + xhr.status +
+                                 " response=" + xhr.responseText)
                     try {
                         var e = JSON.parse(xhr.responseText)
                         if (e.error) msg += ": " + e.error
                         if (e.error_description) msg += " — " + e.error_description
                     } catch(_) {}
                     if (xhr.status === 401 || xhr.status === 403)
-                        msg += "\nCredential type must be \"TVs and limited input devices\"."
+                        msg += "\nCheck whether the Client ID was copied exactly and wait for Google to propagate the credential."
                     deviceFlow.errorMsg = msg
                 }
             }
@@ -62,16 +89,19 @@ Item {
         id: pollTimer
         repeat: true; running: false
         onTriggered: {
+            var clientId = deviceFlow.trimmed(configPage.cfg_clientId)
+            var clientSecret = deviceFlow.trimmed(configPage.cfg_clientSecret)
             var xhr = new XMLHttpRequest()
             xhr.open("POST", "https://oauth2.googleapis.com/token")
             xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
             xhr.onreadystatechange = function() {
                 if (xhr.readyState !== XMLHttpRequest.DONE) return
+                console.warn("[plasma-meets] token status=" + xhr.status + " response=" + xhr.responseText)
                 var d = JSON.parse(xhr.responseText)
                 if (d.access_token) {
-                    plasmoid.configuration.accessToken  = d.access_token
-                    plasmoid.configuration.refreshToken = d.refresh_token
-                    plasmoid.configuration.tokenExpiry  = String(Math.floor(Date.now() / 1000) + d.expires_in - 60)
+                    configPage.cfg_accessToken  = d.access_token
+                    configPage.cfg_refreshToken = d.refresh_token
+                    configPage.cfg_tokenExpiry  = String(Math.floor(Date.now() / 1000) + d.expires_in - 60)
                     var exhr = new XMLHttpRequest()
                     exhr.open("GET", "https://www.googleapis.com/oauth2/v2/userinfo")
                     exhr.setRequestHeader("Authorization", "Bearer " + d.access_token)
@@ -79,7 +109,7 @@ Item {
                         if (exhr.readyState !== XMLHttpRequest.DONE) return
                         if (exhr.status === 200) {
                             var u = JSON.parse(exhr.responseText)
-                            plasmoid.configuration.accountEmail = u.email || u.name || ""
+                            configPage.cfg_accountEmail = u.email || u.name || ""
                         }
                     }
                     exhr.send()
@@ -88,8 +118,8 @@ Item {
                     deviceFlow.stop()
                 }
             }
-            xhr.send("client_id="      + encodeURIComponent(plasmoid.configuration.clientId) +
-                     "&client_secret=" + encodeURIComponent(plasmoid.configuration.clientSecret) +
+            xhr.send("client_id="      + encodeURIComponent(clientId) +
+                     "&client_secret=" + encodeURIComponent(clientSecret) +
                      "&device_code="   + encodeURIComponent(deviceFlow.deviceCode) +
                      "&grant_type=urn:ietf:params:oauth:grant-type:device_code")
         }
@@ -97,25 +127,23 @@ Item {
 
     Kirigami.FormLayout {
         id: form
-        anchors { top: parent.top; left: parent.left; right: parent.right }
-
         Kirigami.Separator { Kirigami.FormData.label: i18n("Google Account") }
 
         // Connected
         RowLayout {
-            visible: plasmoid.configuration.accessToken !== ""
+            visible: configPage.cfg_accessToken !== ""
             Kirigami.FormData.label: ""
             spacing: Kirigami.Units.smallSpacing
             Kirigami.Icon { source: "user-online"; width: Kirigami.Units.iconSizes.small; height: width }
-            QQC2.Label { text: plasmoid.configuration.accountEmail || i18n("Connected"); font.bold: true }
+            QQC2.Label { text: configPage.cfg_accountEmail || i18n("Connected"); font.bold: true }
             Item { width: Kirigami.Units.gridUnit }
             QQC2.Button {
                 text: i18n("Disconnect")
                 onClicked: {
-                    plasmoid.configuration.accessToken  = ""
-                    plasmoid.configuration.refreshToken = ""
-                    plasmoid.configuration.tokenExpiry  = "0"
-                    plasmoid.configuration.accountEmail = ""
+                    configPage.cfg_accessToken  = ""
+                    configPage.cfg_refreshToken = ""
+                    configPage.cfg_tokenExpiry  = "0"
+                    configPage.cfg_accountEmail = ""
                 }
             }
         }
@@ -123,29 +151,29 @@ Item {
         // Client ID
         QQC2.TextField {
             id: clientIdField
-            visible: plasmoid.configuration.accessToken === ""
+            visible: configPage.cfg_accessToken === ""
             Kirigami.FormData.label: i18n("Client ID:")
             placeholderText: "OAuth2 Client ID"
-            text: plasmoid.configuration.clientId
-            onEditingFinished: plasmoid.configuration.clientId = text
+            text: configPage.cfg_clientId
+            onEditingFinished: configPage.cfg_clientId = text
             implicitWidth: Kirigami.Units.gridUnit * 22
         }
 
         // Client Secret
         QQC2.TextField {
             id: clientSecretField
-            visible: plasmoid.configuration.accessToken === ""
+            visible: configPage.cfg_accessToken === ""
             Kirigami.FormData.label: i18n("Client Secret:")
             placeholderText: "OAuth2 Client Secret"
-            text: plasmoid.configuration.clientSecret
+            text: configPage.cfg_clientSecret
             echoMode: TextInput.Password
-            onEditingFinished: plasmoid.configuration.clientSecret = text
+            onEditingFinished: configPage.cfg_clientSecret = text
             implicitWidth: Kirigami.Units.gridUnit * 22
         }
 
         // Instructions
         QQC2.Label {
-            visible: plasmoid.configuration.accessToken === ""
+            visible: configPage.cfg_accessToken === ""
             Kirigami.FormData.label: ""
             text: i18n("In Google Cloud Console: enable Calendar API, create an OAuth client ID with type \"TVs and limited input devices\".")
             wrapMode: Text.WordWrap
@@ -156,7 +184,7 @@ Item {
 
         // Cloud Console link button
         QQC2.Button {
-            visible: plasmoid.configuration.accessToken === ""
+            visible: configPage.cfg_accessToken === ""
             Kirigami.FormData.label: ""
             text: i18n("Open Google Cloud Console →")
             icon.name: "internet-web-browser"
@@ -165,7 +193,7 @@ Item {
 
         // Error
         QQC2.Label {
-            visible: plasmoid.configuration.accessToken === "" && deviceFlow.errorMsg !== ""
+            visible: configPage.cfg_accessToken === "" && deviceFlow.errorMsg !== ""
             Kirigami.FormData.label: ""
             text: deviceFlow.errorMsg
             color: Kirigami.Theme.negativeTextColor
@@ -175,14 +203,14 @@ Item {
 
         // Connect button
         QQC2.Button {
-            visible: plasmoid.configuration.accessToken === "" && !deviceFlow.active
+            visible: configPage.cfg_accessToken === "" && !deviceFlow.active
             Kirigami.FormData.label: ""
             text: i18n("Connect Google Account")
             icon.name: "user-online"
             enabled: clientIdField.text !== "" && clientSecretField.text !== ""
             onClicked: {
-                plasmoid.configuration.clientId     = clientIdField.text
-                plasmoid.configuration.clientSecret = clientSecretField.text
+                configPage.cfg_clientId     = clientIdField.text.trim()
+                configPage.cfg_clientSecret = clientSecretField.text.trim()
                 deviceFlow.start()
             }
         }
@@ -231,7 +259,7 @@ Item {
                 font.bold: true
                 font.family: "monospace"
                 color: Kirigami.Theme.highlightColor
-                letterSpacing: 2
+                font.letterSpacing: 2
             }
         }
 
