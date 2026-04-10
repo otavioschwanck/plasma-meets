@@ -7,11 +7,13 @@ import org.kde.kirigami as Kirigami
 Item {
     id: fullRoot
 
-    // Accessed from PlasmoidItem (parent)
-    readonly property var    model:        parent.meetingsModel
-    readonly property string lastSyncTime: parent.lastSyncTime
-    readonly property bool   isSyncing:    parent.isSyncing
-    readonly property bool   isAuthed:     Plasmoid.configuration.accessToken !== ""
+    property var model
+    property var nextMeeting: null
+    property string lastSyncTime: ""
+    property bool isSyncing: false
+    property bool isAuthed: Plasmoid.configuration.accessToken !== ""
+    readonly property bool hasNextMeetLink: !!(nextMeeting && nextMeeting.meetUrl)
+    signal refreshRequested()
 
     // Size hints — work for both popup and desktop widget
     Layout.minimumWidth:  Kirigami.Units.gridUnit * 18
@@ -46,12 +48,26 @@ Item {
                 height: Kirigami.Units.iconSizes.small
             }
 
+            PlasmaComponents3.Button {
+                visible: fullRoot.isAuthed
+                enabled: fullRoot.hasNextMeetLink
+                text: i18n("Abrir próxima meet")
+                icon.name: "video-conference"
+                onClicked: Qt.openUrlExternally(fullRoot.nextMeeting.meetUrl)
+
+                PlasmaComponents3.ToolTip {
+                    text: fullRoot.hasNextMeetLink
+                          ? i18n("Abrir reunião das %1", fullRoot.nextMeeting.startTime)
+                          : i18n("Nenhuma próxima reunião com link do Google Meet")
+                }
+            }
+
             PlasmaComponents3.ToolButton {
                 visible:   !fullRoot.isSyncing && fullRoot.isAuthed
                 icon.name: "view-refresh"
                 flat:      true
                 PlasmaComponents3.ToolTip { text: i18n("Sincronizar agora") }
-                onClicked: fullRoot.parent.fetchEvents()
+                onClicked: fullRoot.refreshRequested()
             }
         }
 

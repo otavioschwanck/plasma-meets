@@ -26,25 +26,22 @@ Item {
     }
     readonly property bool isSoon: minutesUntil >= 0 && minutesUntil <= 5
     readonly property bool isNow:  minutesUntil >= 0 && minutesUntil <= 0
+    readonly property bool hovered: itemHover.hovered || meetButton.hovered || calendarButton.hovered
 
     width:  parent ? parent.width : 0
-    height: row.implicitHeight + Kirigami.Units.smallSpacing * 2
+    height: row.implicitHeight + Kirigami.Units.largeSpacing * 2
 
     // Hover background
     Rectangle {
         id: hoverBg
         anchors.fill: parent
         color: Kirigami.Theme.hoverColor
-        opacity: 0
+        opacity: meetItem.hovered ? 1 : 0
         Behavior on opacity { NumberAnimation { duration: 100 } }
     }
 
-    MouseArea {
-        anchors.fill: parent
-        hoverEnabled: true
-        onEntered: { hoverBg.opacity = 1; actionRow.opacity = 1 }
-        onExited:  { hoverBg.opacity = 0; actionRow.opacity = 0 }
-        // Row itself is not clickable; use the action buttons
+    HoverHandler {
+        id: itemHover
     }
 
     RowLayout {
@@ -128,16 +125,30 @@ Item {
         // Action buttons — fade in on hover
         RowLayout {
             id: actionRow
-            opacity: 0
+            opacity: meetItem.hovered ? 1 : 0
             spacing: 2
             Behavior on opacity { NumberAnimation { duration: 100 } }
 
             // Open Google Meet
             PlasmaComponents3.ToolButton {
+                id: meetButton
                 visible:    meetItem.meetUrl !== ""
-                icon.name:  "video-conference"
+                icon.name:  "open-link"
+                icon.color: meetButton.hovered ? Kirigami.Theme.textColor : Qt.lighter(Kirigami.Theme.textColor, 1.2)
                 display:    PlasmaComponents3.AbstractButton.IconOnly
                 flat:       true
+                hoverEnabled: true
+
+                background: Rectangle {
+                    radius: Kirigami.Units.cornerRadius
+                    color: meetButton.hovered
+                           ? Qt.rgba(Kirigami.Theme.highlightedTextColor.r,
+                                     Kirigami.Theme.highlightedTextColor.g,
+                                     Kirigami.Theme.highlightedTextColor.b, 0.18)
+                           : Qt.rgba(Kirigami.Theme.textColor.r,
+                                     Kirigami.Theme.textColor.g,
+                                     Kirigami.Theme.textColor.b, 0.10)
+                }
 
                 PlasmaComponents3.ToolTip { text: i18n("Abrir Google Meet") }
 
@@ -146,10 +157,24 @@ Item {
 
             // Open in Google Calendar
             PlasmaComponents3.ToolButton {
+                id: calendarButton
                 visible:    meetItem.calUrl !== ""
                 icon.name:  "view-calendar"
+                icon.color: calendarButton.hovered ? Kirigami.Theme.textColor : Qt.lighter(Kirigami.Theme.textColor, 1.15)
                 display:    PlasmaComponents3.AbstractButton.IconOnly
                 flat:       true
+                hoverEnabled: true
+
+                background: Rectangle {
+                    radius: Kirigami.Units.cornerRadius
+                    color: calendarButton.hovered
+                           ? Qt.rgba(Kirigami.Theme.highlightedTextColor.r,
+                                     Kirigami.Theme.highlightedTextColor.g,
+                                     Kirigami.Theme.highlightedTextColor.b, 0.18)
+                           : Qt.rgba(Kirigami.Theme.textColor.r,
+                                     Kirigami.Theme.textColor.g,
+                                     Kirigami.Theme.textColor.b, 0.10)
+                }
 
                 PlasmaComponents3.ToolTip { text: i18n("Abrir no Google Agenda") }
 

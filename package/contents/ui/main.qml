@@ -8,7 +8,14 @@ PlasmoidItem {
     id: root
 
     // ── Representations ───────────────────────────────────────────────────────
-    fullRepresentation: FullRepresentation { }
+    fullRepresentation: FullRepresentation {
+        model: root.meetingsModel
+        nextMeeting: root.nextMeeting
+        lastSyncTime: root.lastSyncTime
+        isSyncing: root.isSyncing
+        isAuthed: root.accessToken !== ""
+        onRefreshRequested: root.fetchEvents()
+    }
 
     compactRepresentation: Item {
         id: compactRoot
