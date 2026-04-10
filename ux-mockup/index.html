@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plasma Meets — UX Mockup</title>
+<style>
+  /* ── Breeze Dark palette ── */
+  :root {
+    --bg-desktop:       #1a1e26;
+    --bg-panel:         #1b1e2b;
+    --bg-popup:         #232635;
+    --bg-item:          #2a2e3f;
+    --bg-item-hover:    #323650;
+    --bg-section:       #1e2130;
+    --border:           #3a3f5c;
+    --border-light:     #4a5070;
+    --text-primary:     #eff0f1;
+    --text-secondary:   #8e94a8;
+    --text-muted:       #6b7280;
+    --accent:           #3daee9;
+    --accent-hover:     #58b9ec;
+    --green:            #27ae60;
+    --orange:           #f39c12;
+    --red:              #da4453;
+    --purple:           #9b59b6;
+    --panel-h:          44px;
+    --popup-w:          340px;
+    --radius:           8px;
+    --radius-sm:        5px;
+    --font:             'Noto Sans', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg-desktop);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+  }
+
+  /* ── Desktop wallpaper area ── */
+  .desktop {
+    flex: 1;
+    background: linear-gradient(135deg, #0d1117 0%, #1a1e2e 40%, #0f1520 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .desktop::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 30% 60%, rgba(61,174,233,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 50% at 80% 20%, rgba(155,89,182,0.05) 0%, transparent 60%);
+  }
+
+  /* ── Desktop widget ── */
+  .desktop-widget {
+    position: absolute;
+    top: 32px;
+    right: 40px;
+    width: var(--popup-w);
+    background: rgba(35,38,53,0.92);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+
+  /* ── Panel (taskbar) ── */
+  .panel {
+    height: var(--panel-h);
+    background: rgba(27,30,43,0.95);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 4px;
+    position: relative;
+    backdrop-filter: blur(10px);
+  }
+
+  /* ── Panel widget button ── */
+  .widget-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.15s;
+    user-select: none;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: var(--font);
+    font-size: 13px;
+  }
+  .widget-btn:hover { background: rgba(255,255,255,0.08); }
+  .widget-btn.active { background: rgba(61,174,233,0.15); }
+
+  .widget-btn svg { flex-shrink: 0; }
+
+  .widget-btn .meet-time { font-weight: 600; color: var(--accent); }
+  .widget-btn .meet-title {
+    color: var(--text-secondary);
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ── Popup ── */
+  .popup {
+    position: absolute;
+    bottom: calc(var(--panel-h) + 6px);
+    width: var(--popup-w);
+    background: rgba(35,38,53,0.97);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 -4px 32px rgba(0,0,0,0.6);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .popup.open { display: flex; }
+
+  /* ── Shared popup/desktop widget content ── */
+  .popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .popup-header-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .sync-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--accent);
+    cursor: pointer;
+    padding: 3px 7px;
+    border-radius: var(--radius-sm);
+    transition: background 0.15s;
+    border: none;
+    background: transparent;
+    font-family: var(--font);
+  }
+  .sync-btn:hover { background: rgba(61,174,233,0.12); }
+
+  .meeting-list {
+    overflow-y: auto;
+    max-height: 420px;
+    padding: 4px 0;
+  }
+  .meeting-list::-webkit-scrollbar { width: 4px; }
+  .meeting-list::-webkit-scrollbar-track { background: transparent; }
+  .meeting-list::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
+
+  .day-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px 4px;
+  }
+  .day-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .day-line { flex: 1; height: 1px; background: var(--border); }
+
+  .meeting-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background 0.12s;
+    border-radius: 0;
+  }
+  .meeting-item:hover { background: var(--bg-item-hover); }
+  .meeting-item:hover .meeting-actions { opacity: 1; }
+
+  .meeting-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-google  { background: var(--accent); }
+  .dot-work    { background: var(--green); }
+  .dot-past    { background: var(--text-muted); }
+
+  .meeting-time {
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    min-width: 86px;
+    font-variant-numeric: tabular-nums;
+  }
+  .meeting-title {
+    flex: 1;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .meeting-title.past { color: var(--text-muted); text-decoration: line-through; }
+
+  .meeting-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .badge-soon { background: rgba(243,156,18,0.2); color: var(--orange); }
+  .badge-now  { background: rgba(39,174,96,0.2);  color: var(--green);  animation: pulse 1.5s infinite; }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.55; }
+  }
+
+  .meeting-actions {
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.12s;
+    flex-shrink: 0;
+  }
+  .meeting-action-btn {
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    border: none; background: transparent;
+    color: var(--text-muted); cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: background 0.12s, color 0.12s;
+  }
+  .meeting-action-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+  .meeting-action-btn.btn-meet:hover  { color: var(--accent); }
+  .meeting-action-btn.btn-cal:hover   { color: var(--green); }
+
+  .popup-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    border-top: 1px solid var(--border);
+  }
+  .footer-sync-time { font-size: 11px; color: var(--text-muted); }
+  .load-more-btn {
+    font-size: 11px;
+    color: var(--accent);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    font-family: var(--font);
+    padding: 3px 7px;
+    border-radius: var(--radius-sm);
+    transition: background 0.15s;
+  }
+  .load-more-btn:hover { background: rgba(61,174,233,0.12); }
+
+  /* ── Empty state ── */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 32px 16px;
+    color: var(--text-muted);
+    font-size: 13px;
+    text-align: center;
+  }
+
+  /* ── Config overlay ── */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .overlay.open { display: flex; }
+
+  .config-dialog {
+    background: var(--bg-popup);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    width: 480px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+    overflow: hidden;
+  }
+
+  .dialog-titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-section);
+  }
+  .dialog-title { font-size: 15px; font-weight: 600; }
+  .dialog-close {
+    width: 24px; height: 24px;
+    border: none; background: transparent; color: var(--text-secondary);
+    cursor: pointer; border-radius: 4px; font-size: 16px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.12s, color 0.12s;
+    font-family: var(--font);
+  }
+  .dialog-close:hover { background: rgba(218,68,83,0.2); color: var(--red); }
+
+  .config-tabs {
+    display: flex;
+    padding: 0 16px;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-section);
+  }
+  .config-tab {
+    padding: 10px 18px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    user-select: none;
+  }
+  .config-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .config-tab:hover:not(.active) { color: var(--text-primary); }
+
+  .config-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .config-body::-webkit-scrollbar { width: 4px; }
+  .config-body::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
+
+  .config-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: -8px;
+  }
+
+  .config-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .config-row label {
+    font-size: 13px;
+    color: var(--text-primary);
+    flex: 1;
+  }
+  .config-row .hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: block;
+    margin-top: 2px;
+  }
+
+  .config-spinbox {
+    display: flex;
+    align-items: center;
+    background: var(--bg-item);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .config-spinbox button {
+    width: 28px; height: 30px;
+    border: none; background: transparent;
+    color: var(--text-secondary); cursor: pointer; font-size: 16px;
+    transition: background 0.12s, color 0.12s;
+    font-family: var(--font);
+  }
+  .config-spinbox button:hover { background: var(--bg-item-hover); color: var(--text-primary); }
+  .config-spinbox input {
+    width: 44px; text-align: center;
+    border: none; background: transparent;
+    color: var(--text-primary); font-size: 13px; font-family: var(--font);
+    outline: none;
+  }
+
+  .config-select {
+    background: var(--bg-item);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-family: var(--font);
+    padding: 5px 10px;
+    cursor: pointer;
+    outline: none;
+    min-width: 160px;
+  }
+  .config-select option { background: var(--bg-popup); }
+
+  .icon-picker-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .icon-preview {
+    width: 32px; height: 32px;
+    background: var(--bg-item);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .icon-text-input {
+    background: var(--bg-item);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 12px;
+    font-family: monospace;
+    padding: 5px 8px;
+    outline: none;
+    width: 160px;
+    transition: border-color 0.15s;
+  }
+  .icon-text-input:focus { border-color: var(--accent); }
+
+  .auth-card {
+    background: var(--bg-item);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .auth-avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3daee9, #9b59b6);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px; flex-shrink: 0;
+  }
+  .auth-info { flex: 1; }
+  .auth-name { font-size: 13px; font-weight: 600; }
+  .auth-email { font-size: 11px; color: var(--text-muted); }
+  .auth-status {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    background: rgba(39,174,96,0.15);
+    color: var(--green);
+  }
+
+  .btn {
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid;
+    font-size: 12px;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .btn-danger {
+    border-color: rgba(218,68,83,0.4);
+    background: rgba(218,68,83,0.1);
+    color: var(--red);
+  }
+  .btn-danger:hover { background: rgba(218,68,83,0.2); }
+  .btn-primary {
+    border-color: rgba(61,174,233,0.4);
+    background: rgba(61,174,233,0.1);
+    color: var(--accent);
+  }
+  .btn-primary:hover { background: rgba(61,174,233,0.2); }
+
+  .config-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    background: var(--bg-section);
+  }
+  .btn-ok {
+    padding: 7px 20px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: var(--font);
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.15s;
+  }
+  .btn-ok:hover { background: var(--accent-hover); }
+  .btn-cancel {
+    padding: 7px 16px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-cancel:hover { background: var(--bg-item); }
+
+  /* ── Device flow dialog ── */
+  .device-flow-dialog {
+    background: var(--bg-popup);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    width: 360px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+    overflow: hidden;
+  }
+  .device-flow-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+  }
+  .device-flow-icon { font-size: 40px; }
+  .device-flow-title { font-size: 16px; font-weight: 700; }
+  .device-flow-sub { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+  .device-code-box {
+    background: var(--bg-item);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    padding: 12px 24px;
+    font-size: 26px;
+    font-family: monospace;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+  }
+  .device-url {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .device-url a { color: var(--accent); text-decoration: none; }
+  .device-flow-footer {
+    padding: 12px 24px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border-light);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .waiting-text { font-size: 12px; color: var(--text-muted); }
+
+  /* ── Toolbar buttons ── */
+  .other-panel-items {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .panel-clock {
+    padding: 4px 10px;
+    font-size: 13px;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .panel-tray-icon {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: background 0.12s;
+  }
+  .panel-tray-icon:hover { background: rgba(255,255,255,0.08); }
+
+  /* ── Scenario nav ── */
+  .scenario-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 200;
+    background: rgba(10,12,18,0.95);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    backdrop-filter: blur(8px);
+  }
+  .scenario-label { font-size: 11px; color: var(--text-muted); margin-right: 4px; }
+  .scenario-btn {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .scenario-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .scenario-btn.active { background: rgba(61,174,233,0.15); border-color: var(--accent); color: var(--accent); }
+
+  .desktop { padding-top: 40px; }
+
+  /* ── Taskbar mode chip ── */
+  .mode-chip {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    background: rgba(61,174,233,0.12);
+    color: var(--accent);
+    border: 1px solid rgba(61,174,233,0.25);
+  }
+
+  /* hidden panels for scenarios */
+  [data-scenario] { display: none; }
+
+  /* Notifications toast */
+  .toast {
+    position: fixed;
+    bottom: 60px;
+    right: 16px;
+    z-index: 300;
+    background: var(--bg-popup);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--orange);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    min-width: 280px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    display: none;
+    animation: slideIn 0.25s ease;
+  }
+  .toast.show { display: block; }
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+  }
+  .toast-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .toast-body  { font-size: 12px; color: var(--text-secondary); }
+  .toast-app   { font-size: 10px; color: var(--text-muted); margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<!-- ── Scenario navigation ── -->
+<div class="scenario-bar">
+  <span class="scenario-label">Cenário:</span>
+  <button class="scenario-btn active" onclick="setScenario('taskbar-popup')" id="btn-taskbar-popup">Barra + Popup</button>
+  <button class="scenario-btn" onclick="setScenario('desktop-widget')" id="btn-desktop-widget">Widget Desktop</button>
+  <button class="scenario-btn" onclick="setScenario('config')" id="btn-config">Configurações</button>
+  <button class="scenario-btn" onclick="setScenario('auth')" id="btn-auth">Auth Google</button>
+  <button class="scenario-btn" onclick="showToast()" id="btn-notif">Notificação</button>
+  <span style="margin-left:auto; font-size:11px; color:var(--text-muted);">Plasma Meets — Mockup Interativo</span>
+</div>
+
+<!-- ── Desktop area ── -->
+<div class="desktop" id="desktop">
+
+  <!-- Desktop widget (cenário 2) -->
+  <div class="desktop-widget" id="desktop-widget-el" style="display:none;">
+    <div class="popup-header">
+      <span class="popup-header-title">Reuniões</span>
+      <button class="sync-btn" onclick="animateSync(this)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+        Sincronizar
+      </button>
+    </div>
+    <div class="meeting-list" id="dw-list">
+      <!-- filled by JS -->
+    </div>
+    <div class="popup-footer">
+      <span class="footer-sync-time">Sync às 14:02</span>
+    </div>
+  </div>
+
+</div><!-- end desktop -->
+
+<!-- ── Panel ── -->
+<div class="panel" id="panel">
+
+  <!-- Widget button — mode switcher -->
+  <button class="widget-btn" id="widget-btn" onclick="togglePopup()">
+    <!-- icon + text injected by JS -->
+  </button>
+  <span class="mode-chip" id="mode-chip">Hora + Título</span>
+
+  <div style="display:flex;gap:4px;margin-left:8px;">
+    <button class="scenario-btn" style="font-size:10px;padding:2px 8px;" onclick="cycleMode()">Trocar modo barra</button>
+  </div>
+
+  <!-- Other panel items (right side) -->
+  <div class="other-panel-items">
+    <div class="panel-tray-icon" title="Volume">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3z"/></svg>
+    </div>
+    <div class="panel-tray-icon" title="Network">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg>
+    </div>
+    <div class="panel-clock" id="clock">14:37</div>
+  </div>
+
+  <!-- Popup anchored to widget button -->
+  <div class="popup" id="popup">
+    <div class="popup-header">
+      <span class="popup-header-title">Reuniões</span>
+      <button class="sync-btn" onclick="animateSync(this)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+        Sincronizar
+      </button>
+    </div>
+    <div class="meeting-list" id="popup-list">
+      <!-- filled by JS -->
+    </div>
+    <div class="popup-footer">
+      <span class="footer-sync-time">Sincronizado às 14:32</span>
+      <button class="load-more-btn" onclick="loadMore()">+ 3 dias</button>
+    </div>
+  </div>
+
+</div><!-- end panel -->
+
+<!-- ── Config dialog overlay ── -->
+<div class="overlay" id="config-overlay">
+  <div class="config-dialog">
+    <div class="dialog-titlebar">
+      <span class="dialog-title">Configurar Plasma Meets</span>
+      <button class="dialog-close" onclick="closeConfig()">✕</button>
+    </div>
+    <div class="config-tabs">
+      <div class="config-tab active" onclick="switchTab('general', this)">Geral</div>
+      <div class="config-tab" onclick="switchTab('appearance', this)">Aparência</div>
+    </div>
+
+    <!-- General tab -->
+    <div class="config-body" id="tab-general">
+
+      <div class="config-section-title">Conta Google</div>
+      <div class="auth-card">
+        <div class="auth-avatar">O</div>
+        <div class="auth-info">
+          <div class="auth-name">Otávio</div>
+          <div class="auth-email">otavio@gmail.com</div>
+        </div>
+        <span class="auth-status">Conectado</span>
+        <button class="btn btn-danger" onclick="showAuth()">Desconectar</button>
+      </div>
+
+      <div class="config-section-title">Calendário</div>
+
+      <div class="config-row">
+        <label>Dias à frente no popup <span class="hint">Quantos dias mostrar ao abrir o widget</span></label>
+        <div class="config-spinbox">
+          <button onclick="changeVal('days',-1)">−</button>
+          <input id="val-days" value="7" type="number" min="1" max="30" readonly>
+          <button onclick="changeVal('days',1)">+</button>
+        </div>
+      </div>
+
+      <div class="config-row">
+        <label>Notificar X minutos antes <span class="hint">Alerta antes de cada reunião começar</span></label>
+        <div class="config-spinbox">
+          <button onclick="changeVal('notify',-1)">−</button>
+          <input id="val-notify" value="10" type="number" min="1" max="60" readonly>
+          <button onclick="changeVal('notify',1)">+</button>
+        </div>
+      </div>
+
+      <div class="config-row">
+        <label>Sincronizar a cada (minutos) <span class="hint">Intervalo de atualização automática</span></label>
+        <div class="config-spinbox">
+          <button onclick="changeVal('sync',-1)">−</button>
+          <input id="val-sync" value="5" type="number" min="1" max="30" readonly>
+          <button onclick="changeVal('sync',1)">+</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Appearance tab -->
+    <div class="config-body" id="tab-appearance" style="display:none;">
+
+      <div class="config-section-title">Barra de tarefas</div>
+
+      <div class="config-row">
+        <label>Exibir na barra <span class="hint">O que aparece ao lado do ícone</span></label>
+        <select class="config-select" id="taskbar-mode-select" onchange="updateTaskbarModeFromConfig()">
+          <option value="icon">Só ícone</option>
+          <option value="time" selected>Hora da próxima</option>
+          <option value="time+title">Hora + Título</option>
+        </select>
+      </div>
+
+      <div class="config-row" id="row-chars">
+        <label>Limite de caracteres do título <span class="hint">Título truncado após N caracteres</span></label>
+        <div class="config-spinbox">
+          <button onclick="changeVal('chars',-5)">−</button>
+          <input id="val-chars" value="30" type="number" min="5" max="100" readonly>
+          <button onclick="changeVal('chars',5)">+</button>
+        </div>
+      </div>
+
+      <div class="config-section-title">Ícones</div>
+
+      <div class="config-row">
+        <label>Ícone — Sem reunião hoje <span class="hint">Nome do ícone do sistema KDE</span></label>
+        <div class="icon-picker-row">
+          <div class="icon-preview" id="icon-preview-no">📅</div>
+          <input class="icon-text-input" value="meeting-organizer" oninput="updateIconPreview('no', this.value)" placeholder="nome do ícone">
+        </div>
+      </div>
+
+      <div class="config-row">
+        <label>Ícone — Com reunião <span class="hint">Mostrado quando há reuniões hoje</span></label>
+        <div class="icon-picker-row">
+          <div class="icon-preview" id="icon-preview-yes">🗓️</div>
+          <input class="icon-text-input" value="meeting-attending" oninput="updateIconPreview('yes', this.value)" placeholder="nome do ícone">
+        </div>
+      </div>
+
+    </div>
+
+    <div class="config-footer">
+      <button class="btn-cancel" onclick="closeConfig()">Cancelar</button>
+      <button class="btn-ok" onclick="closeConfig()">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Auth Device Flow dialog ── -->
+<div class="overlay" id="auth-overlay">
+  <div class="device-flow-dialog">
+    <div class="dialog-titlebar">
+      <span class="dialog-title">Conectar ao Google</span>
+      <button class="dialog-close" onclick="closeAuth()">✕</button>
+    </div>
+    <div class="device-flow-body">
+      <div class="device-flow-icon">🔐</div>
+      <div class="device-flow-title">Autorize o acesso</div>
+      <div class="device-flow-sub">
+        Acesse o endereço abaixo em qualquer dispositivo<br>
+        e insira o código para conectar sua conta Google.
+      </div>
+      <div class="device-code-box">HXP-4RQJ</div>
+      <div class="device-url">
+        Acesse: <a href="#">google.com/device</a>
+      </div>
+    </div>
+    <div class="device-flow-footer">
+      <div class="spinner"></div>
+      <div class="waiting-text">Aguardando autorização…</div>
+      <button class="btn btn-danger" onclick="closeAuth()" style="font-size:12px;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Notification toast ── -->
+<div class="toast" id="toast">
+  <div class="toast-app">Plasma Meets</div>
+  <div class="toast-title">Daily Standup em 10 minutos</div>
+  <div class="toast-body">15:00 · Google Meet</div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+const meetings = [
+  // Today
+  { day:'Hoje', date:'2026-04-10', start:'09:30', end:'10:00', title:'Daily Standup',         url:'#', dot:'dot-past', past:true },
+  { day:'Hoje', date:'2026-04-10', start:'11:00', end:'11:30', title:'Revisão de Sprint',      url:'#', dot:'dot-past', past:true },
+  { day:'Hoje', date:'2026-04-10', start:'14:00', end:'14:30', title:'1:1 com Tech Lead',      url:'#', dot:'dot-work', badge:'now', badgeLabel:'Agora' },
+  { day:'Hoje', date:'2026-04-10', start:'15:00', end:'15:45', title:'Planejamento Q2',        url:'#', dot:'dot-google', badge:'soon', badgeLabel:'em 23min' },
+  { day:'Hoje', date:'2026-04-10', start:'17:00', end:'17:30', title:'Sync Frontend × Design', url:'#', dot:'dot-work' },
+  // Tomorrow
+  { day:'Amanhã', date:'2026-04-11', start:'09:00', end:'09:30', title:'Daily Standup',        url:'#', dot:'dot-google' },
+  { day:'Amanhã', date:'2026-04-11', start:'10:00', end:'11:00', title:'Entrevista Técnica',   url:'#', dot:'dot-purple' },
+  { day:'Amanhã', date:'2026-04-11', start:'14:30', end:'15:00', title:'Demo para o cliente',  url:'#', dot:'dot-google' },
+  // Apr 12
+  { day:'Sáb, 12 Abr', date:'2026-04-12', start:'10:00', end:'10:30', title:'Retro da Sprint', url:'#', dot:'dot-work' },
+];
+
+let shownDays = 2;   // initially show Today + Amanhã
+let taskbarMode = 'time+title';
+const nextMeet = meetings.find(m => m.badge === 'soon' || m.badge === 'now') || meetings[3];
+
+// ── Taskbar modes ─────────────────────────────────────────────────────────────
+const iconNoMeet  = '📅';
+const iconHasMeet = '🗓️';
+const hasMeetToday = true;
+
+function renderWidgetBtn() {
+  const btn = document.getElementById('widget-btn');
+  const chip = document.getElementById('mode-chip');
+  const icon = hasMeetToday ? iconHasMeet : iconNoMeet;
+  chip.textContent = { 'icon': 'Só ícone', 'time': 'Hora', 'time+title': 'Hora + Título' }[taskbarMode];
+
+  let html = `<span style="font-size:18px;">${icon}</span>`;
+  if (taskbarMode === 'time' || taskbarMode === 'time+title') {
+    html += `<span class="meet-time">${nextMeet.start}</span>`;
+  }
+  if (taskbarMode === 'time+title') {
+    const title = nextMeet.title.length > 30 ? nextMeet.title.slice(0, 30) + '…' : nextMeet.title;
+    html += `<span class="meet-title">· ${title}</span>`;
+  }
+  btn.innerHTML = html;
+}
+
+function cycleMode() {
+  const modes = ['icon', 'time', 'time+title'];
+  taskbarMode = modes[(modes.indexOf(taskbarMode) + 1) % modes.length];
+  renderWidgetBtn();
+  // sync config select
+  document.getElementById('taskbar-mode-select').value = taskbarMode;
+  document.getElementById('row-chars').style.display = taskbarMode === 'time+title' ? 'flex' : 'none';
+}
+
+function updateTaskbarModeFromConfig() {
+  taskbarMode = document.getElementById('taskbar-mode-select').value;
+  renderWidgetBtn();
+  document.getElementById('row-chars').style.display = taskbarMode === 'time+title' ? 'flex' : 'none';
+}
+
+// ── Meeting list renderer ─────────────────────────────────────────────────────
+function renderMeetingList(containerId, days) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+
+  const grouped = {};
+  const order = [];
+  meetings.forEach(m => {
+    if (!grouped[m.day]) { grouped[m.day] = []; order.push(m.day); }
+    grouped[m.day].push(m);
+  });
+
+  const shownGroups = order.slice(0, days);
+
+  if (shownGroups.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <span style="font-size:36px;">📅</span>
+        <span>Nenhuma reunião nos próximos dias</span>
+      </div>`;
+    return;
+  }
+
+  shownGroups.forEach(day => {
+    const header = document.createElement('div');
+    header.className = 'day-header';
+    header.innerHTML = `<span class="day-label">${day}</span><div class="day-line"></div>`;
+    container.appendChild(header);
+
+    grouped[day].forEach(m => {
+      const item = document.createElement('div');
+      item.className = 'meeting-item';
+
+      let badgeHtml = '';
+      if (m.badge === 'now')  badgeHtml = `<span class="meeting-badge badge-now">${m.badgeLabel}</span>`;
+      if (m.badge === 'soon') badgeHtml = `<span class="meeting-badge badge-soon">${m.badgeLabel}</span>`;
+
+      // Meet icon (video camera)
+      const svgMeet = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+      </svg>`;
+      // Calendar icon
+      const svgCal = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>`;
+
+      item.innerHTML = `
+        <div class="meeting-dot ${m.dot}"></div>
+        <span class="meeting-time">${m.start}–${m.end}</span>
+        <span class="meeting-title${m.past ? ' past' : ''}">${m.title}</span>
+        ${badgeHtml}
+        <div class="meeting-actions">
+          <button class="meeting-action-btn btn-meet" title="Abrir Google Meet"
+            onclick="event.stopPropagation(); showToastCustom('Abrindo Meet…', '${m.title}', '${m.start}')">
+            ${svgMeet}
+          </button>
+          <button class="meeting-action-btn btn-cal" title="Abrir no Google Agenda"
+            onclick="event.stopPropagation(); showToastCustom('Abrindo Agenda…', '${m.title}', '${m.start}')">
+            ${svgCal}
+          </button>
+        </div>`;
+      container.appendChild(item);
+    });
+  });
+}
+
+// ── Load more ─────────────────────────────────────────────────────────────────
+function loadMore() {
+  const allDays = [...new Set(meetings.map(m => m.day))];
+  shownDays = Math.min(shownDays + 1, allDays.length);
+  renderMeetingList('popup-list', shownDays);
+  renderMeetingList('dw-list', shownDays);
+}
+
+// ── Popup toggle ─────────────────────────────────────────────────────────────
+function togglePopup() {
+  const popup = document.getElementById('popup');
+  const btn = document.getElementById('widget-btn');
+  const isOpen = popup.classList.contains('open');
+  popup.classList.toggle('open', !isOpen);
+  btn.classList.toggle('active', !isOpen);
+
+  // Anchor popup to button position
+  const panelRect = document.getElementById('panel').getBoundingClientRect();
+  const btnRect = btn.getBoundingClientRect();
+  popup.style.left = (btnRect.left - panelRect.left) + 'px';
+}
+
+// Close popup on outside click
+document.addEventListener('click', (e) => {
+  const popup = document.getElementById('popup');
+  const btn = document.getElementById('widget-btn');
+  if (!popup.contains(e.target) && !btn.contains(e.target)) {
+    popup.classList.remove('open');
+    btn.classList.remove('active');
+  }
+});
+
+// ── Sync animation ────────────────────────────────────────────────────────────
+function animateSync(btn) {
+  const svg = btn.querySelector('svg');
+  svg.style.transition = 'transform 0.6s ease';
+  svg.style.transform = 'rotate(360deg)';
+  setTimeout(() => { svg.style.transition = ''; svg.style.transform = ''; }, 650);
+}
+
+// ── Config / Auth ─────────────────────────────────────────────────────────────
+function closeConfig()  { document.getElementById('config-overlay').classList.remove('open'); }
+function closeAuth()    { document.getElementById('auth-overlay').classList.remove('open'); }
+function showAuth()     {
+  document.getElementById('config-overlay').classList.remove('open');
+  document.getElementById('auth-overlay').classList.add('open');
+}
+function switchTab(tab, el) {
+  document.querySelectorAll('.config-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-general').style.display    = tab === 'general'    ? 'flex' : 'none';
+  document.getElementById('tab-appearance').style.display = tab === 'appearance' ? 'flex' : 'none';
+}
+
+// ── Spinbox ───────────────────────────────────────────────────────────────────
+function changeVal(key, delta) {
+  const el = document.getElementById('val-' + key);
+  const min = parseInt(el.min) || 1;
+  const max = parseInt(el.max) || 100;
+  el.value = Math.min(max, Math.max(min, parseInt(el.value) + delta));
+}
+
+// ── Icon preview ─────────────────────────────────────────────────────────────
+const iconMap = {
+  'meeting-organizer': '📅', 'meeting-attending': '🗓️', 'calendar': '📆',
+  'appointment-new': '📋', 'view-calendar': '📅', 'preferences-system': '⚙️',
+};
+function updateIconPreview(type, name) {
+  const el = document.getElementById('icon-preview-' + type);
+  el.textContent = iconMap[name] || '🔲';
+}
+
+// ── Toast notifications ───────────────────────────────────────────────────────
+function showToast() {
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+function showToastCustom(prefix, title, time) {
+  const t = document.getElementById('toast');
+  t.querySelector('.toast-title').textContent = prefix + ' ' + title;
+  const isCal = prefix.includes('Agenda');
+  t.querySelector('.toast-body').textContent = time + (isCal ? ' · Google Agenda' : ' · Google Meet');
+  t.style.borderLeftColor = isCal ? 'var(--green)' : 'var(--accent)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Scenario switching ────────────────────────────────────────────────────────
+function setScenario(s) {
+  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-' + s)?.classList.add('active');
+
+  const popup = document.getElementById('popup');
+  const dwEl  = document.getElementById('desktop-widget-el');
+  const overlay = document.getElementById('config-overlay');
+  const authOverlay = document.getElementById('auth-overlay');
+
+  popup.classList.remove('open');
+  document.getElementById('widget-btn').classList.remove('active');
+  dwEl.style.display  = 'none';
+  overlay.classList.remove('open');
+  authOverlay.classList.remove('open');
+
+  if (s === 'taskbar-popup') {
+    popup.classList.add('open');
+    document.getElementById('widget-btn').classList.add('active');
+    const panelRect = document.getElementById('panel').getBoundingClientRect();
+    const btnRect = document.getElementById('widget-btn').getBoundingClientRect();
+    popup.style.left = (btnRect.left - panelRect.left) + 'px';
+  } else if (s === 'desktop-widget') {
+    dwEl.style.display = 'block';
+  } else if (s === 'config') {
+    overlay.classList.add('open');
+  } else if (s === 'auth') {
+    authOverlay.classList.add('open');
+  } else if (s === 'notif') {
+    showToast();
+  }
+}
+
+// ── Clock ─────────────────────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+}
+setInterval(updateClock, 10000);
+updateClock();
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+renderWidgetBtn();
+renderMeetingList('popup-list', shownDays);
+renderMeetingList('dw-list', shownDays);
+setScenario('taskbar-popup');
+document.getElementById('row-chars').style.display = 'flex'; // time+title default
+</script>
+</body>
+</html>

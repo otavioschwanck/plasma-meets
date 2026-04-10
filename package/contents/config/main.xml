@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+  <kcfgfile name=""/>
+  <group name="General">
+    <entry name="clientId" type="String">
+      <default></default>
+    </entry>
+    <entry name="clientSecret" type="String">
+      <default></default>
+    </entry>
+    <entry name="accessToken" type="String">
+      <default></default>
+    </entry>
+    <entry name="refreshToken" type="String">
+      <default></default>
+    </entry>
+    <!-- Unix timestamp as string (Int overflows) -->
+    <entry name="tokenExpiry" type="String">
+      <default>0</default>
+    </entry>
+    <entry name="accountEmail" type="String">
+      <default></default>
+    </entry>
+    <entry name="daysAhead" type="Int">
+      <default>7</default>
+    </entry>
+    <entry name="notifyMinutes" type="Int">
+      <default>10</default>
+    </entry>
+    <entry name="syncIntervalMin" type="Int">
+      <default>5</default>
+    </entry>
+    <!-- icon | time | time+title -->
+    <entry name="taskbarMode" type="String">
+      <default>time</default>
+    </entry>
+    <entry name="titleMaxChars" type="Int">
+      <default>30</default>
+    </entry>
+    <entry name="iconNoMeet" type="String">
+      <default>meeting-organizer</default>
+    </entry>
+    <entry name="iconHasMeet" type="String">
+      <default>meeting-attending</default>
+    </entry>
+  </group>
+</kcfg>

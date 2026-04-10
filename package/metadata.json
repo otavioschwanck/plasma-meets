@@ -1,0 +1,19 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "",
+                "Name": "Otávio"
+            }
+        ],
+        "Category": "Date and Time",
+        "Description": "Próximas reuniões do Google Calendar na barra de tarefas",
+        "Icon": "meeting-attending",
+        "Id": "org.kde.plasma.plasma-meets",
+        "License": "GPL-2.0+",
+        "Name": "Plasma Meets",
+        "Version": "1.0",
+        "Website": ""
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

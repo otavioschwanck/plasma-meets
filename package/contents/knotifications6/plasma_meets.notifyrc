@@ -1,0 +1,9 @@
+[Global]
+IconName=meeting-attending
+Comment=Plasma Meets
+
+[Event/meetingReminder]
+Name=Lembrete de reunião
+Comment=Notificação antes de uma reunião começar
+Action=Popup
+Urgency=Normal
