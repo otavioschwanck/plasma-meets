@@ -20,8 +20,8 @@ Item {
     // Badge: "Agora" | "em Xmin" | ""
     readonly property string badgeText: {
         if (isPast || minutesUntil < 0) return ""
-        if (minutesUntil === 0)         return i18n("Agora")
-        if (minutesUntil <= 30)         return i18n("em %1 min", minutesUntil)
+        if (minutesUntil === 0)         return i18n("Now")
+        if (minutesUntil <= 30)         return i18n("in %1 min", minutesUntil)
         return ""
     }
     readonly property bool isSoon: minutesUntil >= 0 && minutesUntil <= 5
@@ -150,7 +150,7 @@ Item {
                                      Kirigami.Theme.textColor.b, 0.10)
                 }
 
-                PlasmaComponents3.ToolTip { text: i18n("Abrir Google Meet") }
+                PlasmaComponents3.ToolTip { text: i18n("Open Google Meet") }
 
                 onClicked: Qt.openUrlExternally(meetItem.meetUrl)
             }
@@ -176,7 +176,7 @@ Item {
                                      Kirigami.Theme.textColor.b, 0.10)
                 }
 
-                PlasmaComponents3.ToolTip { text: i18n("Abrir no Google Agenda") }
+                PlasmaComponents3.ToolTip { text: i18n("Open in Google Calendar") }
 
                 onClicked: Qt.openUrlExternally(meetItem.calUrl)
             }

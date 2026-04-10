@@ -34,7 +34,7 @@ Item {
             Layout.bottomMargin: Kirigami.Units.smallSpacing
 
             PlasmaComponents3.Label {
-                text: i18n("Reuniões")
+                text: i18n("Meetings")
                 font.bold: true
                 font.pointSize: Kirigami.Theme.defaultFont.pointSize
                 color: Kirigami.Theme.disabledTextColor
@@ -51,14 +51,14 @@ Item {
             PlasmaComponents3.Button {
                 visible: fullRoot.isAuthed
                 enabled: fullRoot.hasNextMeetLink
-                text: i18n("Abrir próxima meet")
+                text: i18n("Open next Meet")
                 icon.name: "video-conference"
                 onClicked: Qt.openUrlExternally(fullRoot.nextMeeting.meetUrl)
 
                 PlasmaComponents3.ToolTip {
                     text: fullRoot.hasNextMeetLink
-                          ? i18n("Abrir reunião das %1", fullRoot.nextMeeting.startTime)
-                          : i18n("Nenhuma próxima reunião com link do Google Meet")
+                          ? i18n("Open meeting at %1", fullRoot.nextMeeting.startTime)
+                          : i18n("No upcoming meeting with a Google Meet link")
                 }
             }
 
@@ -66,7 +66,7 @@ Item {
                 visible:   !fullRoot.isSyncing && fullRoot.isAuthed
                 icon.name: "view-refresh"
                 flat:      true
-                PlasmaComponents3.ToolTip { text: i18n("Sincronizar agora") }
+                PlasmaComponents3.ToolTip { text: i18n("Sync now") }
                 onClicked: fullRoot.refreshRequested()
             }
         }
@@ -92,13 +92,13 @@ Item {
                 }
 
                 PlasmaComponents3.Label {
-                    text: i18n("Conta Google não conectada")
+                    text: i18n("Google account not connected")
                     color: Kirigami.Theme.disabledTextColor
                     Layout.alignment: Qt.AlignHCenter
                 }
 
                 PlasmaComponents3.Button {
-                    text: i18n("Configurar…")
+                    text: i18n("Configure...")
                     Layout.alignment: Qt.AlignHCenter
                     icon.name: "configure"
                     onClicked: plasmoid.action("configure").trigger()
@@ -164,7 +164,7 @@ Item {
                 PlasmaComponents3.Label {
                     anchors.centerIn: parent
                     visible: meetingList.count === 0 && fullRoot.isAuthed && !fullRoot.isSyncing
-                    text: i18n("Nenhuma reunião nos próximos %1 dias",
+                    text: i18n("No meetings in the next %1 days",
                                Plasmoid.configuration.daysAhead)
                     color: Kirigami.Theme.disabledTextColor
                     horizontalAlignment: Text.AlignHCenter
@@ -187,7 +187,7 @@ Item {
 
             PlasmaComponents3.Label {
                 visible: fullRoot.lastSyncTime !== ""
-                text: i18n("Sync às %1", fullRoot.lastSyncTime)
+                text: i18n("Synced at %1", fullRoot.lastSyncTime)
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
                 color: Kirigami.Theme.disabledTextColor
                 Layout.fillWidth: true
@@ -195,7 +195,7 @@ Item {
 
             PlasmaComponents3.Label {
                 visible: fullRoot.lastSyncTime === "" && !fullRoot.isSyncing
-                text: i18n("Nunca sincronizado")
+                text: i18n("Never synced")
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
                 color: Kirigami.Theme.disabledTextColor
                 Layout.fillWidth: true

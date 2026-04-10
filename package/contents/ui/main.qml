@@ -33,7 +33,13 @@ PlasmoidItem {
         MouseArea {
             anchors.fill: parent
             hoverEnabled: true
-            onClicked:    root.expanded = !root.expanded
+            acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+            onClicked: function(mouse) {
+                if (mouse.button === Qt.MiddleButton)
+                    root.openNextMeeting()
+                else
+                    root.expanded = !root.expanded
+            }
 
             Rectangle {
                 anchors.fill: parent
@@ -120,6 +126,11 @@ PlasmoidItem {
     readonly property int    notifyMinutes:   Plasmoid.configuration.notifyMinutes
     readonly property int    syncIntervalMin: Plasmoid.configuration.syncIntervalMin
 
+    function openNextMeeting() {
+        if (root.nextMeeting && root.nextMeeting.meetUrl)
+            Qt.openUrlExternally(root.nextMeeting.meetUrl)
+    }
+
     // ── Timers ────────────────────────────────────────────────────────────────
     Timer {
         id: syncTimer
@@ -155,7 +166,7 @@ PlasmoidItem {
         // notifications are disabled but the widget keeps working.
         onStatusChanged: {
             if (status === Loader.Error)
-                console.warn("plasma5support not found — notifications disabled. Install it with: sudo pacman -S plasma5support")
+                console.warn("plasma5support not found - notifications disabled. Install it with: sudo pacman -S plasma5support")
         }
     }
 
@@ -342,10 +353,10 @@ PlasmoidItem {
         var tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1)
         var d = new Date(dateStr + "T00:00:00"); d.setHours(0, 0, 0, 0)
         var diff = Math.round((d - today) / 86400000)
-        if (diff === 0) return "Hoje"
-        if (diff === 1) return "Amanhã"
-        var days   = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"]
-        var months = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"]
+        if (diff === 0) return i18n("Today")
+        if (diff === 1) return i18n("Tomorrow")
+        var days   = [i18n("Sun"), i18n("Mon"), i18n("Tue"), i18n("Wed"), i18n("Thu"), i18n("Fri"), i18n("Sat")]
+        var months = [i18n("Jan"), i18n("Feb"), i18n("Mar"), i18n("Apr"), i18n("May"), i18n("Jun"), i18n("Jul"), i18n("Aug"), i18n("Sep"), i18n("Oct"), i18n("Nov"), i18n("Dec")]
         return days[d.getDay()] + ", " + d.getDate() + " " + months[d.getMonth()]
     }
 
@@ -385,7 +396,7 @@ PlasmoidItem {
                 endIso:    ev.end.dateTime,
                 startTime: root.formatHHMM(ev.start.dateTime),
                 endTime:   root.formatHHMM(ev.end.dateTime),
-                title:     ev.summary || i18n("(sem título)"),
+                title:     ev.summary || i18n("(untitled)"),
                 meetUrl:   meetUrl,
                 calUrl:    calUrl,
                 isPast:    isPast,
@@ -432,7 +443,7 @@ PlasmoidItem {
 
                 root.sendNotification(
                     m.title,
-                    i18n("Começa às %1 — em %2 min", m.startTime, minLeft)
+                    i18n("Starts at %1 - in %2 min", m.startTime, minLeft)
                 )
             }
         }

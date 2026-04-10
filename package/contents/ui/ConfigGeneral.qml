@@ -45,7 +45,7 @@ KCM.SimpleKCM {
             var id = trimmed(configPage.cfg_clientId)
             configPage.cfg_clientId = id
             configPage.cfg_clientSecret = trimmed(configPage.cfg_clientSecret)
-            if (!id) { errorMsg = "Enter Client ID first."; return }
+            if (!id) { errorMsg = i18n("Enter Client ID first."); return }
             console.warn("[plasma-meets] Starting device flow. clientIdLength=" + id.length +
                          " suffix=" + id.slice(Math.max(0, id.length - 20)))
             var xhr = new XMLHttpRequest()
@@ -63,16 +63,16 @@ KCM.SimpleKCM {
                     pollTimer.interval         = (d.interval || 5) * 1000
                     pollTimer.start()
                 } else {
-                    var msg = "Error " + xhr.status
+                    var msg = i18n("Error %1", xhr.status)
                     console.warn("[plasma-meets] device/code FAILED status=" + xhr.status +
                                  " response=" + xhr.responseText)
                     try {
                         var e = JSON.parse(xhr.responseText)
                         if (e.error) msg += ": " + e.error
-                        if (e.error_description) msg += " — " + e.error_description
+                        if (e.error_description) msg += " - " + e.error_description
                     } catch(_) {}
                     if (xhr.status === 401 || xhr.status === 403)
-                        msg += "\nCheck whether the Client ID was copied exactly and wait for Google to propagate the credential."
+                        msg += "\n" + i18n("Check whether the Client ID was copied exactly and wait for Google to propagate the credential.")
                     deviceFlow.errorMsg = msg
                 }
             }
@@ -153,7 +153,7 @@ KCM.SimpleKCM {
             id: clientIdField
             visible: configPage.cfg_accessToken === ""
             Kirigami.FormData.label: i18n("Client ID:")
-            placeholderText: "OAuth2 Client ID"
+            placeholderText: i18n("OAuth2 Client ID")
             text: configPage.cfg_clientId
             onEditingFinished: configPage.cfg_clientId = text
             implicitWidth: Kirigami.Units.gridUnit * 22
@@ -164,7 +164,7 @@ KCM.SimpleKCM {
             id: clientSecretField
             visible: configPage.cfg_accessToken === ""
             Kirigami.FormData.label: i18n("Client Secret:")
-            placeholderText: "OAuth2 Client Secret"
+            placeholderText: i18n("OAuth2 Client Secret")
             text: configPage.cfg_clientSecret
             echoMode: TextInput.Password
             onEditingFinished: configPage.cfg_clientSecret = text
@@ -175,7 +175,7 @@ KCM.SimpleKCM {
         QQC2.Label {
             visible: configPage.cfg_accessToken === ""
             Kirigami.FormData.label: ""
-            text: i18n("In Google Cloud Console: enable Calendar API, create an OAuth client ID with type \"TVs and limited input devices\".")
+            text: i18n("In Google Cloud Console, enable Calendar API and create an OAuth client ID with type \"TVs and limited input devices\".")
             wrapMode: Text.WordWrap
             font.pointSize: Kirigami.Theme.smallFont.pointSize
             color: Kirigami.Theme.disabledTextColor
@@ -186,7 +186,7 @@ KCM.SimpleKCM {
         QQC2.Button {
             visible: configPage.cfg_accessToken === ""
             Kirigami.FormData.label: ""
-            text: i18n("Open Google Cloud Console →")
+            text: i18n("Open Google Cloud Console ->")
             icon.name: "internet-web-browser"
             onClicked: Qt.openUrlExternally("https://console.cloud.google.com/apis/credentials")
         }
@@ -274,7 +274,7 @@ KCM.SimpleKCM {
                 padding: 0
             }
             QQC2.Label {
-                text: i18n("Waiting for authorization…")
+                text: i18n("Waiting for authorization...")
                 color: Kirigami.Theme.disabledTextColor
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
             }

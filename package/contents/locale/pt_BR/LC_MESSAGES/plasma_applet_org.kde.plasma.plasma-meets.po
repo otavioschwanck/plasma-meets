@@ -1,0 +1,238 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: plasma-meets\n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "General"
+msgstr "Geral"
+
+msgid "Appearance"
+msgstr "Aparência"
+
+msgid "(default)"
+msgstr "(padrão)"
+
+msgid "Choose…"
+msgstr "Escolher..."
+
+msgid "Reset to default"
+msgstr "Restaurar padrão"
+
+msgid "Taskbar"
+msgstr "Barra de tarefas"
+
+msgid "Show in taskbar:"
+msgstr "Mostrar na barra:"
+
+msgid "Icon only"
+msgstr "Somente ícone"
+
+msgid "Time"
+msgstr "Hora"
+
+msgid "Time + Title"
+msgstr "Hora + título"
+
+msgid "Title character limit:"
+msgstr "Limite de caracteres do título:"
+
+msgid "Icons"
+msgstr "Ícones"
+
+msgid "No meetings today:"
+msgstr "Sem reuniões hoje:"
+
+msgid "Has meetings today:"
+msgstr "Tem reuniões hoje:"
+
+msgid "Choose icons using the standard Plasma icon picker."
+msgstr "Escolha os ícones usando o seletor padrão de ícones do Plasma."
+
+msgid "Enter Client ID first."
+msgstr "Preencha primeiro o Client ID."
+
+msgid "Error %1"
+msgstr "Erro %1"
+
+msgid "Check whether the Client ID was copied exactly and wait for Google to propagate the credential."
+msgstr "Verifique se o Client ID foi copiado exatamente e aguarde o Google propagar a credencial."
+
+msgid "Google Account"
+msgstr "Conta Google"
+
+msgid "Connected"
+msgstr "Conectado"
+
+msgid "Disconnect"
+msgstr "Desconectar"
+
+msgid "Client ID:"
+msgstr "Client ID:"
+
+msgid "OAuth2 Client ID"
+msgstr "OAuth2 Client ID"
+
+msgid "Client Secret:"
+msgstr "Client Secret:"
+
+msgid "OAuth2 Client Secret"
+msgstr "OAuth2 Client Secret"
+
+msgid "In Google Cloud Console, enable Calendar API and create an OAuth client ID with type \"TVs and limited input devices\"."
+msgstr "No Google Cloud Console, habilite a Calendar API e crie um OAuth client ID do tipo \"TVs and limited input devices\"."
+
+msgid "Open Google Cloud Console ->"
+msgstr "Abrir Google Cloud Console ->"
+
+msgid "Connect Google Account"
+msgstr "Conectar conta Google"
+
+msgid "Authorization"
+msgstr "Autorização"
+
+msgid "Step 1:"
+msgstr "Passo 1:"
+
+msgid "Visit %1"
+msgstr "Visite %1"
+
+msgid "Step 2:"
+msgstr "Passo 2:"
+
+msgid "Enter this code:"
+msgstr "Digite este código:"
+
+msgid "Waiting for authorization..."
+msgstr "Aguardando autorização..."
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Calendar"
+msgstr "Calendário"
+
+msgid "Days ahead:"
+msgstr "Dias à frente:"
+
+msgid "Notify before (min):"
+msgstr "Notificar antes (min):"
+
+msgid "Sync every (min):"
+msgstr "Sincronizar a cada (min):"
+
+msgid "Meetings"
+msgstr "Reuniões"
+
+msgid "Open next Meet"
+msgstr "Abrir próxima Meet"
+
+msgid "Open meeting at %1"
+msgstr "Abrir reunião das %1"
+
+msgid "No upcoming meeting with a Google Meet link"
+msgstr "Nenhuma próxima reunião com link do Google Meet"
+
+msgid "Sync now"
+msgstr "Sincronizar agora"
+
+msgid "Google account not connected"
+msgstr "Conta Google não conectada"
+
+msgid "Configure..."
+msgstr "Configurar..."
+
+msgid "No meetings in the next %1 days"
+msgstr "Nenhuma reunião nos próximos %1 dias"
+
+msgid "Synced at %1"
+msgstr "Sync às %1"
+
+msgid "Never synced"
+msgstr "Nunca sincronizado"
+
+msgid "Now"
+msgstr "Agora"
+
+msgid "in %1 min"
+msgstr "em %1 min"
+
+msgid "Open Google Meet"
+msgstr "Abrir Google Meet"
+
+msgid "Open in Google Calendar"
+msgstr "Abrir no Google Agenda"
+
+msgid "No meetings today"
+msgstr "Sem reuniões hoje"
+
+msgid "Today"
+msgstr "Hoje"
+
+msgid "Tomorrow"
+msgstr "Amanhã"
+
+msgid "Sun"
+msgstr "Dom"
+
+msgid "Mon"
+msgstr "Seg"
+
+msgid "Tue"
+msgstr "Ter"
+
+msgid "Wed"
+msgstr "Qua"
+
+msgid "Thu"
+msgstr "Qui"
+
+msgid "Fri"
+msgstr "Sex"
+
+msgid "Sat"
+msgstr "Sáb"
+
+msgid "Jan"
+msgstr "Jan"
+
+msgid "Feb"
+msgstr "Fev"
+
+msgid "Mar"
+msgstr "Mar"
+
+msgid "Apr"
+msgstr "Abr"
+
+msgid "May"
+msgstr "Mai"
+
+msgid "Jun"
+msgstr "Jun"
+
+msgid "Jul"
+msgstr "Jul"
+
+msgid "Aug"
+msgstr "Ago"
+
+msgid "Sep"
+msgstr "Set"
+
+msgid "Oct"
+msgstr "Out"
+
+msgid "Nov"
+msgstr "Nov"
+
+msgid "Dec"
+msgstr "Dez"
+
+msgid "(untitled)"
+msgstr "(sem título)"
+
+msgid "Starts at %1 - in %2 min"
+msgstr "Começa às %1 - em %2 min"

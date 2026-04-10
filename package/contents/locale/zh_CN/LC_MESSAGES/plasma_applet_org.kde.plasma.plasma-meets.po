@@ -1,0 +1,238 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: plasma-meets\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "General"
+msgstr "常规"
+
+msgid "Appearance"
+msgstr "外观"
+
+msgid "(default)"
+msgstr "（默认）"
+
+msgid "Choose…"
+msgstr "选择..."
+
+msgid "Reset to default"
+msgstr "恢复默认"
+
+msgid "Taskbar"
+msgstr "任务栏"
+
+msgid "Show in taskbar:"
+msgstr "任务栏显示："
+
+msgid "Icon only"
+msgstr "仅图标"
+
+msgid "Time"
+msgstr "时间"
+
+msgid "Time + Title"
+msgstr "时间 + 标题"
+
+msgid "Title character limit:"
+msgstr "标题字符上限："
+
+msgid "Icons"
+msgstr "图标"
+
+msgid "No meetings today:"
+msgstr "今天没有会议："
+
+msgid "Has meetings today:"
+msgstr "今天有会议："
+
+msgid "Choose icons using the standard Plasma icon picker."
+msgstr "使用 Plasma 标准图标选择器选择图标。"
+
+msgid "Enter Client ID first."
+msgstr "请先填写 Client ID。"
+
+msgid "Error %1"
+msgstr "错误 %1"
+
+msgid "Check whether the Client ID was copied exactly and wait for Google to propagate the credential."
+msgstr "请检查 Client ID 是否完整复制，并等待 Google 同步该凭据。"
+
+msgid "Google Account"
+msgstr "Google 账户"
+
+msgid "Connected"
+msgstr "已连接"
+
+msgid "Disconnect"
+msgstr "断开连接"
+
+msgid "Client ID:"
+msgstr "Client ID："
+
+msgid "OAuth2 Client ID"
+msgstr "OAuth2 Client ID"
+
+msgid "Client Secret:"
+msgstr "Client Secret："
+
+msgid "OAuth2 Client Secret"
+msgstr "OAuth2 Client Secret"
+
+msgid "In Google Cloud Console, enable Calendar API and create an OAuth client ID with type \"TVs and limited input devices\"."
+msgstr "请在 Google Cloud Console 中启用 Calendar API，并创建类型为“TVs and limited input devices”的 OAuth client ID。"
+
+msgid "Open Google Cloud Console ->"
+msgstr "打开 Google Cloud Console ->"
+
+msgid "Connect Google Account"
+msgstr "连接 Google 账户"
+
+msgid "Authorization"
+msgstr "授权"
+
+msgid "Step 1:"
+msgstr "步骤 1："
+
+msgid "Visit %1"
+msgstr "访问 %1"
+
+msgid "Step 2:"
+msgstr "步骤 2："
+
+msgid "Enter this code:"
+msgstr "输入此代码："
+
+msgid "Waiting for authorization..."
+msgstr "等待授权中..."
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Calendar"
+msgstr "日历"
+
+msgid "Days ahead:"
+msgstr "未来天数："
+
+msgid "Notify before (min):"
+msgstr "提前通知（分钟）："
+
+msgid "Sync every (min):"
+msgstr "同步间隔（分钟）："
+
+msgid "Meetings"
+msgstr "会议"
+
+msgid "Open next Meet"
+msgstr "打开下一个 Meet"
+
+msgid "Open meeting at %1"
+msgstr "打开 %1 的会议"
+
+msgid "No upcoming meeting with a Google Meet link"
+msgstr "没有带 Google Meet 链接的即将开始的会议"
+
+msgid "Sync now"
+msgstr "立即同步"
+
+msgid "Google account not connected"
+msgstr "Google 账户未连接"
+
+msgid "Configure..."
+msgstr "配置..."
+
+msgid "No meetings in the next %1 days"
+msgstr "未来 %1 天内没有会议"
+
+msgid "Synced at %1"
+msgstr "同步于 %1"
+
+msgid "Never synced"
+msgstr "从未同步"
+
+msgid "Now"
+msgstr "现在"
+
+msgid "in %1 min"
+msgstr "%1 分钟后"
+
+msgid "Open Google Meet"
+msgstr "打开 Google Meet"
+
+msgid "Open in Google Calendar"
+msgstr "在 Google 日历中打开"
+
+msgid "No meetings today"
+msgstr "今天没有会议"
+
+msgid "Today"
+msgstr "今天"
+
+msgid "Tomorrow"
+msgstr "明天"
+
+msgid "Sun"
+msgstr "周日"
+
+msgid "Mon"
+msgstr "周一"
+
+msgid "Tue"
+msgstr "周二"
+
+msgid "Wed"
+msgstr "周三"
+
+msgid "Thu"
+msgstr "周四"
+
+msgid "Fri"
+msgstr "周五"
+
+msgid "Sat"
+msgstr "周六"
+
+msgid "Jan"
+msgstr "1月"
+
+msgid "Feb"
+msgstr "2月"
+
+msgid "Mar"
+msgstr "3月"
+
+msgid "Apr"
+msgstr "4月"
+
+msgid "May"
+msgstr "5月"
+
+msgid "Jun"
+msgstr "6月"
+
+msgid "Jul"
+msgstr "7月"
+
+msgid "Aug"
+msgstr "8月"
+
+msgid "Sep"
+msgstr "9月"
+
+msgid "Oct"
+msgstr "10月"
+
+msgid "Nov"
+msgstr "11月"
+
+msgid "Dec"
+msgstr "12月"
+
+msgid "(untitled)"
+msgstr "（无标题）"
+
+msgid "Starts at %1 - in %2 min"
+msgstr "%1 开始 - %2 分钟后"

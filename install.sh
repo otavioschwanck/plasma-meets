@@ -1,6 +1,16 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if command -v msgfmt &>/dev/null; then
+    find "$SCRIPT_DIR/package/contents/locale" -name "*.po" | while read -r po; do
+        mo="${po%.po}.mo"
+        msgfmt -o "$mo" "$po"
+        echo "Compiled: $(basename "$(dirname "$(dirname "$po")")")/$(basename "$po")"
+    done
+else
+    echo "Warning: msgfmt not found, skipping translation compile."
+fi
 
 DEST="$HOME/.local/share/plasma/plasmoids/org.kde.plasma.plasma-meets"
 rm -rf "$DEST"
