@@ -13,6 +13,7 @@ else
 fi
 
 DEST="$HOME/.local/share/plasma/plasmoids/org.kde.plasma.plasma-meets"
+mkdir -p "$(dirname "$DEST")"
 rm -rf "$DEST"
 cp -r "$SCRIPT_DIR/package" "$DEST"
 echo "Widget installed to $DEST"
