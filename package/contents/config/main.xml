@@ -23,6 +23,9 @@
     <entry name="accountEmail" type="String">
       <default></default>
     </entry>
+    <entry name="authVersion" type="Int">
+      <default>0</default>
+    </entry>
     <entry name="daysAhead" type="Int">
       <default>7</default>
     </entry>

@@ -242,3 +242,6 @@ msgstr "(sem título)"
 
 msgid "Starts at %1 - in %2 min"
 msgstr "Começa às %1 - em %2 min"
+
+msgid "Copy code"
+msgstr "Copiar código"

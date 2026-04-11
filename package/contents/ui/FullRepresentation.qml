@@ -12,7 +12,7 @@ Item {
     property string nextMeetingEventId: ""
     property string lastSyncTime: ""
     property bool isSyncing: false
-    property bool isAuthed: Plasmoid.configuration.accessToken !== ""
+    property bool isAuthed: false
     readonly property bool hasNextMeetLink: !!(nextMeeting && nextMeeting.meetUrl)
     signal refreshRequested()
 

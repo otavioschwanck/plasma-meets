@@ -16,6 +16,7 @@ DEST="$HOME/.local/share/plasma/plasmoids/org.kde.plasma.plasma-meets"
 mkdir -p "$(dirname "$DEST")"
 rm -rf "$DEST"
 cp -r "$SCRIPT_DIR/package" "$DEST"
+chmod +x "$DEST/contents/bin/plasma-meets-helper.sh"
 echo "Widget installed to $DEST"
 
 # Install notifyrc so KNotification works

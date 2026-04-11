@@ -9,12 +9,6 @@ import org.kde.plasma.plasmoid
 KCM.SimpleKCM {
     id: configPage
 
-    property string cfg_clientId:         ""
-    property string cfg_clientSecret:     ""
-    property string cfg_accessToken:      ""
-    property string cfg_refreshToken:     ""
-    property string cfg_tokenExpiry:      "0"
-    property string cfg_accountEmail:     ""
     property int cfg_daysAhead:           7
     property int cfg_notifyMinutes:       10
     property int cfg_syncIntervalMin:     5
@@ -23,12 +17,6 @@ KCM.SimpleKCM {
     property string cfg_iconNoMeet:    Plasmoid.configuration.iconNoMeet
     property string cfg_iconHasMeet:   Plasmoid.configuration.iconHasMeet
 
-    property string cfg_clientIdDefault:     ""
-    property string cfg_clientSecretDefault: ""
-    property string cfg_accessTokenDefault:  ""
-    property string cfg_refreshTokenDefault: ""
-    property string cfg_tokenExpiryDefault:  "0"
-    property string cfg_accountEmailDefault: ""
     property int cfg_daysAheadDefault:       7
     property int cfg_notifyMinutesDefault:   10
     property int cfg_syncIntervalMinDefault: 5

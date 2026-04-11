@@ -14,7 +14,7 @@ PlasmoidItem {
         nextMeetingEventId: root.nextMeetingEventId
         lastSyncTime: root.lastSyncTime
         isSyncing: root.isSyncing
-        isAuthed: root.accessToken !== ""
+        isAuthed: root.hasStoredAuth
         onRefreshRequested: root.fetchEvents()
     }
 
@@ -100,20 +100,21 @@ PlasmoidItem {
     property string lastSyncTime:     ""
     property bool   isSyncing:        false
 
-    // Device flow transient state
-    property bool   showDeviceFlow:        false
-    property string deviceUserCode:        ""
-    property string deviceVerificationUrl: ""
-    property string _deviceCode:           ""   // internal, not shown in UI
-
     // Notification tracking — reset each day
     property var    _notifiedIds: ({})
     property string _notifDate:   ""
+    property string _accessToken:  ""
+    property string _refreshToken: ""
+    property string _clientSecret: ""
+    property bool   _secretsLoaded: false
 
     // ── Config shortcuts (read-only mirrors so bindings fire) ─────────────────
-    readonly property string accessToken:     Plasmoid.configuration.accessToken
-    readonly property string refreshToken:    Plasmoid.configuration.refreshToken
+    readonly property string accessToken:     root._accessToken
+    readonly property bool   hasStoredAuth:   root._secretsLoaded
+                                              && Plasmoid.configuration.clientId !== ""
+                                              && root._refreshToken !== ""
     readonly property real   tokenExpiry:     parseFloat(Plasmoid.configuration.tokenExpiry) || 0
+    readonly property int    authVersion:     Plasmoid.configuration.authVersion
     readonly property int    daysAhead:       Plasmoid.configuration.daysAhead
     readonly property int    notifyMinutes:   Plasmoid.configuration.notifyMinutes
     readonly property int    syncIntervalMin: Plasmoid.configuration.syncIntervalMin
@@ -127,7 +128,7 @@ PlasmoidItem {
     Timer {
         id: syncTimer
         interval:         root.syncIntervalMin * 60000
-        running:          root.accessToken !== ""
+        running:          root.hasStoredAuth
         repeat:           true
         triggeredOnStart: true
         onTriggered:      root.fetchEvents()
@@ -136,7 +137,7 @@ PlasmoidItem {
     Timer {
         id: notifTimer
         interval: 60000
-        running:  root.accessToken !== ""
+        running:  root.hasStoredAuth
         repeat:   true
         triggeredOnStart: true
         onTriggered: {
@@ -145,104 +146,72 @@ PlasmoidItem {
         }
     }
 
-    // Device-flow poll timer (stopped by default)
-    Timer {
-        id: pollTimer
-        interval: 5000
-        repeat:   true
-        running:  false
-        onTriggered: root.pollDeviceToken()
-    }
-
-    // ── Notifications (via plasma5support if installed, otherwise silent) ──────
+    // ── Helper backend ────────────────────────────────────────────────────────
     Loader {
-        id: notificationHelper
-        source: "NotificationHelper.qml"
-        // If plasma5support is not installed the Loader fails silently;
-        // notifications are disabled but the widget keeps working.
+        id: secureHelper
+        source: "SecureHelper.qml"
+        onLoaded: root.loadSecureSecrets()
         onStatusChanged: {
             if (status === Loader.Error)
-                console.warn("plasma5support not found - notifications disabled. Install it with: sudo pacman -S plasma5support")
+                console.warn("Secure helper unavailable; notifications and secret storage are disabled.")
         }
     }
 
     function sendNotification(title, body) {
-        if (notificationHelper.item) {
-            const t = title.replace(/\\/g, "\\\\").replace(/"/g, '\\"')
-            const b = body.replace(/\\/g, "\\\\").replace(/"/g, '\\"')
-            notificationHelper.item.exec(`notify-send -a "Plasma Meets" -i calendar "${t}" "${b}" -t 10000`)
-        }
+        if (secureHelper.item)
+            secureHelper.item.notify(title, body)
     }
 
-    // ── OAuth2 Device Flow ────────────────────────────────────────────────────
-    function startDeviceFlow() {
-        const clientId = Plasmoid.configuration.clientId
-        if (!clientId) return
-
-        var xhr = new XMLHttpRequest()
-        xhr.open("POST", "https://oauth2.googleapis.com/device/code")
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState !== XMLHttpRequest.DONE) return
-            if (xhr.status === 200) {
-                var d = JSON.parse(xhr.responseText)
-                root._deviceCode           = d.device_code
-                root.deviceUserCode        = d.user_code
-                root.deviceVerificationUrl = d.verification_url || "google.com/device"
-                root.showDeviceFlow        = true
-                pollTimer.interval         = (d.interval || 5) * 1000
-                pollTimer.running          = true
-            }
-        }
-        xhr.send("client_id=" + encodeURIComponent(clientId) +
-                 "&scope=https://www.googleapis.com/auth/calendar.readonly")
+    function clearLegacySecrets() {
+        if (Plasmoid.configuration.clientSecret !== "")
+            Plasmoid.configuration.clientSecret = ""
+        if (Plasmoid.configuration.accessToken !== "")
+            Plasmoid.configuration.accessToken = ""
+        if (Plasmoid.configuration.refreshToken !== "")
+            Plasmoid.configuration.refreshToken = ""
+        if (Plasmoid.configuration.tokenExpiry !== "0")
+            Plasmoid.configuration.tokenExpiry = "0"
     }
 
-    function pollDeviceToken() {
-        if (!root._deviceCode) return
-        const clientId     = Plasmoid.configuration.clientId
-        const clientSecret = Plasmoid.configuration.clientSecret
-
-        var xhr = new XMLHttpRequest()
-        xhr.open("POST", "https://oauth2.googleapis.com/token")
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState !== XMLHttpRequest.DONE) return
-            var d = JSON.parse(xhr.responseText)
-
-            if (d.access_token) {
-                pollTimer.running              = false
-                root.showDeviceFlow            = false
-                root._deviceCode               = ""
-                Plasmoid.configuration.accessToken  = d.access_token
-                Plasmoid.configuration.refreshToken = d.refresh_token
-                Plasmoid.configuration.tokenExpiry  =
-                    String(Math.floor(Date.now() / 1000) + d.expires_in - 60)
-                root.fetchUserEmail()
-                root.fetchEvents()
-                return
-            }
-            // authorization_pending → keep polling; anything else → abort
-            if (d.error && d.error !== "authorization_pending") {
-                pollTimer.running  = false
-                root.showDeviceFlow = false
-                root._deviceCode   = ""
-            }
+    function loadSecureSecrets() {
+        root._secretsLoaded = false
+        root._accessToken = ""
+        root._refreshToken = ""
+        root._clientSecret = ""
+        if (!secureHelper.item) {
+            clearLegacySecrets()
+            return
         }
-        xhr.send("client_id=" + encodeURIComponent(clientId) +
-                 "&client_secret=" + encodeURIComponent(clientSecret) +
-                 "&device_code=" + encodeURIComponent(root._deviceCode) +
-                 "&grant_type=urn:ietf:params:oauth:grant-type:device_code")
+
+        secureHelper.item.readSecret("clientSecret", function(value) {
+            root._clientSecret = value
+            secureHelper.item.readSecret("refreshToken", function(refreshValue) {
+                root._refreshToken = refreshValue
+                root._secretsLoaded = true
+                clearLegacySecrets()
+                if (Plasmoid.configuration.clientId !== "" && root._refreshToken !== "") {
+                    if (Plasmoid.configuration.accountEmail === "")
+                        root.fetchUserEmail()
+                    root.fetchEvents()
+                }
+            })
+        })
     }
 
     function disconnectAccount() {
-        pollTimer.running = false
-        root.showDeviceFlow = false
-        root._deviceCode = ""
-        Plasmoid.configuration.accessToken  = ""
-        Plasmoid.configuration.refreshToken = ""
+        var refreshToken = root._refreshToken
+        root.isSyncing = false
+        root._accessToken = ""
+        root._refreshToken = ""
+        root._clientSecret = ""
         Plasmoid.configuration.tokenExpiry  = "0"
         Plasmoid.configuration.accountEmail = ""
+        if (secureHelper.item) {
+            if (refreshToken !== "")
+                secureHelper.item.revokeToken(refreshToken)
+            secureHelper.item.clearSecret("refreshToken")
+            secureHelper.item.clearSecret("clientSecret")
+        }
         meetingsModel.clear()
         root.hasMeetingsToday = false
         root.nextMeeting = null
@@ -252,13 +221,16 @@ PlasmoidItem {
     // ── Token management ──────────────────────────────────────────────────────
     function doWithToken(callback) {
         const now = Math.floor(Date.now() / 1000)
-        if (root.tokenExpiry > now + 30) {
+        if (root.accessToken !== "" && root.tokenExpiry > now + 30) {
             callback(root.accessToken)
             return
         }
         // Needs refresh
-        const rToken = Plasmoid.configuration.refreshToken
-        if (!rToken) return
+        const rToken = root._refreshToken
+        if (!rToken || root._clientSecret === "") {
+            root.isSyncing = false
+            return
+        }
 
         var xhr = new XMLHttpRequest()
         xhr.open("POST", "https://oauth2.googleapis.com/token")
@@ -267,18 +239,22 @@ PlasmoidItem {
             if (xhr.readyState !== XMLHttpRequest.DONE) return
             if (xhr.status === 200) {
                 var d = JSON.parse(xhr.responseText)
-                Plasmoid.configuration.accessToken = d.access_token
+                root._accessToken = d.access_token
                 Plasmoid.configuration.tokenExpiry =
                     String(Math.floor(Date.now() / 1000) + d.expires_in - 60)
                 callback(d.access_token)
             } else {
                 // Refresh failed → need re-auth
-                Plasmoid.configuration.accessToken  = ""
-                Plasmoid.configuration.refreshToken = ""
+                root.isSyncing = false
+                root._accessToken = ""
+                root._refreshToken = ""
+                Plasmoid.configuration.tokenExpiry = "0"
+                if (secureHelper.item)
+                    secureHelper.item.clearSecret("refreshToken")
             }
         }
         xhr.send("client_id=" + encodeURIComponent(Plasmoid.configuration.clientId) +
-                 "&client_secret=" + encodeURIComponent(Plasmoid.configuration.clientSecret) +
+                 "&client_secret=" + encodeURIComponent(root._clientSecret) +
                  "&refresh_token=" + encodeURIComponent(rToken) +
                  "&grant_type=refresh_token")
     }
@@ -302,7 +278,10 @@ PlasmoidItem {
 
     // ── Google Calendar API ───────────────────────────────────────────────────
     function fetchEvents() {
-        if (!root.accessToken) return
+        if (!root._secretsLoaded || Plasmoid.configuration.clientId === "" || root._refreshToken === "") {
+            root.isSyncing = false
+            return
+        }
         root.isSyncing = true
 
         root.doWithToken(function(token) {
@@ -326,7 +305,8 @@ PlasmoidItem {
                     root.processMeetings(data.items || [])
                     root.lastSyncTime = Qt.formatTime(new Date(), "HH:mm")
                 } else if (xhr.status === 401) {
-                    Plasmoid.configuration.accessToken = ""
+                    root._accessToken = ""
+                    Plasmoid.configuration.tokenExpiry = "0"
                 }
             }
             xhr.send()
@@ -519,9 +499,10 @@ PlasmoidItem {
 
     // ── Init ──────────────────────────────────────────────────────────────────
     Component.onCompleted: {
-        if (root.accessToken !== "") {
-            root.fetchEvents()
-            root.refreshTimeSensitiveState()
-        }
+        clearLegacySecrets()
+        loadSecureSecrets()
+        root.refreshTimeSensitiveState()
     }
+
+    onAuthVersionChanged: loadSecureSecrets()
 }
