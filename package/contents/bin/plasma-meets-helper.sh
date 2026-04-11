@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if command -v qdbus6 &>/dev/null; then
+    _qdbus=qdbus6
+elif command -v qdbus-qt6 &>/dev/null; then
+    _qdbus=qdbus-qt6
+else
+    echo "qdbus6 or qdbus-qt6 not found" >&2
+    exit 1
+fi
+
 wallet_service="${PLASMA_MEETS_WALLET_SERVICE:-org.kde.kwalletd6}"
 wallet_path="${PLASMA_MEETS_WALLET_PATH:-/modules/kwalletd6}"
 wallet_iface="${PLASMA_MEETS_WALLET_IFACE:-org.kde.KWallet}"
@@ -11,16 +20,16 @@ wallet_app="${PLASMA_MEETS_APPID:-plasma-meets-helper}"
 cmd="${1:-}"
 
 wallet_handle() {
-    qdbus6 "$wallet_service" "$wallet_path" "$wallet_iface.open" "$wallet_name" 0 "$wallet_app"
+    $_qdbus "$wallet_service" "$wallet_path" "$wallet_iface.open" "$wallet_name" 0 "$wallet_app"
 }
 
 wallet_ensure_folder() {
     local handle="$1"
     local has_folder
 
-    has_folder="$(qdbus6 "$wallet_service" "$wallet_path" "$wallet_iface.hasFolder" "$handle" "$wallet_folder" "$wallet_app" | tr -d '\r')"
+    has_folder="$($_qdbus "$wallet_service" "$wallet_path" "$wallet_iface.hasFolder" "$handle" "$wallet_folder" "$wallet_app" | tr -d '\r')"
     if [[ "$has_folder" != "true" ]]; then
-        qdbus6 "$wallet_service" "$wallet_path" "$wallet_iface.createFolder" "$handle" "$wallet_folder" "$wallet_app" >/dev/null
+        $_qdbus "$wallet_service" "$wallet_path" "$wallet_iface.createFolder" "$handle" "$wallet_folder" "$wallet_app" >/dev/null
     fi
 }
 
@@ -31,7 +40,7 @@ wallet_read() {
 
     handle="$(wallet_handle)"
     wallet_ensure_folder "$handle"
-    value="$(qdbus6 "$wallet_service" "$wallet_path" "$wallet_iface.readPassword" "$handle" "$wallet_folder" "$entry" "$wallet_app" 2>/dev/null || true)"
+    value="$($_qdbus "$wallet_service" "$wallet_path" "$wallet_iface.readPassword" "$handle" "$wallet_folder" "$entry" "$wallet_app" 2>/dev/null || true)"
     printf '%s' "$value"
 }
 
@@ -42,7 +51,7 @@ wallet_write() {
 
     handle="$(wallet_handle)"
     wallet_ensure_folder "$handle"
-    qdbus6 "$wallet_service" "$wallet_path" "$wallet_iface.writePassword" "$handle" "$wallet_folder" "$entry" "$value" "$wallet_app" >/dev/null
+    $_qdbus "$wallet_service" "$wallet_path" "$wallet_iface.writePassword" "$handle" "$wallet_folder" "$entry" "$value" "$wallet_app" >/dev/null
 }
 
 wallet_clear() {
@@ -51,7 +60,7 @@ wallet_clear() {
 
     handle="$(wallet_handle)"
     wallet_ensure_folder "$handle"
-    qdbus6 "$wallet_service" "$wallet_path" "$wallet_iface.removeEntry" "$handle" "$wallet_folder" "$entry" "$wallet_app" >/dev/null 2>/dev/null || true
+    $_qdbus "$wallet_service" "$wallet_path" "$wallet_iface.removeEntry" "$handle" "$wallet_folder" "$entry" "$wallet_app" >/dev/null 2>/dev/null || true
 }
 
 case "$cmd" in
@@ -71,7 +80,7 @@ case "$cmd" in
     notify)
         title="${2:-}"
         body="${3:-}"
-        qdbus6 org.freedesktop.Notifications /org/freedesktop/Notifications org.freedesktop.Notifications.Notify \
+        $_qdbus org.freedesktop.Notifications /org/freedesktop/Notifications org.freedesktop.Notifications.Notify \
             "Plasma Meets" 0 "calendar" "$title" "$body" [] {} 10000 >/dev/null
         ;;
     oauth-revoke)
