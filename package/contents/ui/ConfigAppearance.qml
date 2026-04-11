@@ -22,7 +22,7 @@ KCM.SimpleKCM {
     property int cfg_syncIntervalMinDefault: 5
     property string cfg_taskbarModeDefault:  "time"
     property int cfg_titleMaxCharsDefault:   30
-    property string cfg_iconNoMeetDefault:   "meeting-organizer"
+    property string cfg_iconNoMeetDefault:   "meeting-attending-tentative"
     property string cfg_iconHasMeetDefault:  "meeting-attending"
 
     KIconThemes.IconDialog {
@@ -112,7 +112,7 @@ KCM.SimpleKCM {
             label: i18n("No meetings today:")
             iconName: cfg_iconNoMeet
             targetKey: "noMeet"
-            defaultIcon: "meeting-organizer"
+            defaultIcon: "meeting-attending-tentative"
         }
 
         IconPickerRow {

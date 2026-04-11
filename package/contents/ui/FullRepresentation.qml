@@ -85,7 +85,7 @@ Item {
                 spacing: Kirigami.Units.largeSpacing
 
                 Kirigami.Icon {
-                    source: "meeting-organizer"
+                    source: "meeting-attending-tentative"
                     width:  Kirigami.Units.iconSizes.huge
                     height: Kirigami.Units.iconSizes.huge
                     Layout.alignment: Qt.AlignHCenter

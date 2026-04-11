@@ -23,7 +23,7 @@ PlasmoidItem {
 
         readonly property string mode:        Plasmoid.configuration.taskbarMode
         readonly property int    maxChars:    Plasmoid.configuration.titleMaxChars
-        readonly property string iconNoMeet:  Plasmoid.configuration.iconNoMeet  || "meeting-organizer"
+        readonly property string iconNoMeet:  Plasmoid.configuration.iconNoMeet  || "meeting-attending-tentative"
         readonly property string iconHasMeet: Plasmoid.configuration.iconHasMeet || "meeting-attending"
 
         Layout.minimumWidth:  compactRow.implicitWidth + Kirigami.Units.smallSpacing * 2

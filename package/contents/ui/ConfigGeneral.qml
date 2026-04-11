@@ -35,7 +35,7 @@ KCM.SimpleKCM {
     property int cfg_syncIntervalMinDefault: 5
     property string cfg_taskbarModeDefault:  "time"
     property int cfg_titleMaxCharsDefault:   30
-    property string cfg_iconNoMeetDefault:   "meeting-organizer"
+    property string cfg_iconNoMeetDefault:   "meeting-attending-tentative"
     property string cfg_iconHasMeetDefault:  "meeting-attending"
     property string clientSecretInput:       ""
     property bool hasRefreshToken:           false

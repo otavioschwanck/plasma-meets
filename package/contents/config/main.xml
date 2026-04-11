@@ -43,7 +43,7 @@
       <default>30</default>
     </entry>
     <entry name="iconNoMeet" type="String">
-      <default>meeting-organizer</default>
+      <default>meeting-attending-tentative</default>
     </entry>
     <entry name="iconHasMeet" type="String">
       <default>meeting-attending</default>
