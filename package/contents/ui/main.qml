@@ -103,10 +103,11 @@ PlasmoidItem {
     // Notification tracking — reset each day
     property var    _notifiedIds: ({})
     property string _notifDate:   ""
-    property string _accessToken:  ""
-    property string _refreshToken: ""
-    property string _clientSecret: ""
+    property string _accessToken:   ""
+    property string _refreshToken:  ""
+    property string _clientSecret:  ""
     property bool   _secretsLoaded: false
+    property int    _refreshFailCount: 0
 
     // ── Config shortcuts (read-only mirrors so bindings fire) ─────────────────
     readonly property string accessToken:     root._accessToken
@@ -132,6 +133,12 @@ PlasmoidItem {
         repeat:           true
         triggeredOnStart: true
         onTriggered:      root.fetchEvents()
+    }
+
+    Timer {
+        id: refreshRetryTimer
+        repeat: false
+        onTriggered: root.fetchEvents()
     }
 
     Timer {
@@ -219,6 +226,8 @@ PlasmoidItem {
     }
 
     // ── Token management ──────────────────────────────────────────────────────
+    readonly property string _tokenEndpoint: "https://oauth2.googleapis.com/token"
+
     function doWithToken(callback) {
         const now = Math.floor(Date.now() / 1000)
         if (root.accessToken !== "" && root.tokenExpiry > now + 30) {
@@ -231,20 +240,33 @@ PlasmoidItem {
             root.isSyncing = false
             return
         }
+        // Refuse to send credentials over non-HTTPS
+        if (!root._tokenEndpoint.startsWith("https://")) {
+            root.isSyncing = false
+            return
+        }
 
         var xhr = new XMLHttpRequest()
-        xhr.open("POST", "https://oauth2.googleapis.com/token")
+        xhr.open("POST", root._tokenEndpoint)
         xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
         xhr.onreadystatechange = function() {
             if (xhr.readyState !== XMLHttpRequest.DONE) return
             if (xhr.status === 200) {
+                root._refreshFailCount = 0
                 var d = JSON.parse(xhr.responseText)
                 root._accessToken = d.access_token
                 Plasmoid.configuration.tokenExpiry =
                     String(Math.floor(Date.now() / 1000) + d.expires_in - 60)
                 callback(d.access_token)
+            } else if (xhr.status === 0) {
+                // Network error — exponential backoff, max 5 min
+                root.isSyncing = false
+                root._refreshFailCount = Math.min(root._refreshFailCount + 1, 8)
+                refreshRetryTimer.interval = Math.min(Math.pow(2, root._refreshFailCount) * 1000, 300000)
+                refreshRetryTimer.restart()
             } else {
-                // Refresh failed → need re-auth
+                // Auth error (4xx) → tokens invalid, need re-auth
+                root._refreshFailCount = 0
                 root.isSyncing = false
                 root._accessToken = ""
                 root._refreshToken = ""
