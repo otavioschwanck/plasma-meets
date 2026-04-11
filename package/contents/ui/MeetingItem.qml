@@ -9,6 +9,7 @@ Item {
     id: meetItem
 
     // Data properties (set by ListView delegate binding)
+    property string eventId:      ""
     property string startTime:    ""
     property string endTime:      ""
     property string title:        ""
@@ -18,6 +19,7 @@ Item {
     property bool   isCancelled:  false
     property bool   isDeclined:   false
     property int    minutesUntil: -1   // <0 = past/N/A, 0+ = minutes remaining
+    property bool   isCurrent:    false
 
     // Badge: "Agora" | "em Xmin" | ""
     readonly property string badgeText: {
@@ -31,17 +33,39 @@ Item {
     readonly property bool isSoon: minutesUntil >= 0 && minutesUntil <= 5
     readonly property bool isNow:  minutesUntil >= 0 && minutesUntil <= 0
     readonly property bool hovered: itemHover.hovered || meetButton.hovered || calendarButton.hovered
+    readonly property color accentColor: (meetItem.isPast || meetItem.isCancelled || meetItem.isDeclined)
+                                         ? Kirigami.Theme.disabledTextColor
+                                         : (meetItem.isSoon || meetItem.isNow)
+                                           ? Kirigami.Theme.positiveTextColor
+                                           : Kirigami.Theme.highlightColor
 
     width:  parent ? parent.width : 0
-    height: row.implicitHeight + Kirigami.Units.largeSpacing * 2
+    height: row.implicitHeight + Kirigami.Units.largeSpacing * 2 + Kirigami.Units.smallSpacing
 
-    // Hover background
     Rectangle {
-        id: hoverBg
-        anchors.fill: parent
-        color: Kirigami.Theme.hoverColor
-        opacity: meetItem.hovered ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: 100 } }
+        anchors {
+            fill: parent
+            leftMargin: Kirigami.Units.smallSpacing
+            rightMargin: Kirigami.Units.smallSpacing
+            topMargin: 1
+            bottomMargin: 1
+        }
+        radius: Kirigami.Units.cornerRadius
+        color: meetItem.isCurrent
+               ? Qt.rgba(Kirigami.Theme.highlightColor.r,
+                         Kirigami.Theme.highlightColor.g,
+                         Kirigami.Theme.highlightColor.b, 0.16)
+               : meetItem.hovered
+                 ? Qt.rgba(Kirigami.Theme.hoverColor.r,
+                           Kirigami.Theme.hoverColor.g,
+                           Kirigami.Theme.hoverColor.b, 0.45)
+                 : "transparent"
+        border.width: meetItem.isCurrent ? 1 : 0
+        border.color: Qt.rgba(meetItem.accentColor.r,
+                              meetItem.accentColor.g,
+                              meetItem.accentColor.b, 0.5)
+        Behavior on color { ColorAnimation { duration: 100 } }
+        Behavior on border.color { ColorAnimation { duration: 100 } }
     }
 
     HoverHandler {
@@ -54,21 +78,19 @@ Item {
             left:           parent.left
             right:          parent.right
             verticalCenter: parent.verticalCenter
-            leftMargin:     Kirigami.Units.largeSpacing
-            rightMargin:    Kirigami.Units.largeSpacing
+            leftMargin:     Kirigami.Units.largeSpacing + Kirigami.Units.smallSpacing
+            rightMargin:    Kirigami.Units.largeSpacing + Kirigami.Units.smallSpacing
         }
-        spacing: Kirigami.Units.smallSpacing
+        spacing: Kirigami.Units.smallSpacing + 2
 
         // Color dot
         Rectangle {
-            width:  7
-            height: 7
-            radius: 4
-            color:  (meetItem.isPast || meetItem.isCancelled || meetItem.isDeclined)
-                    ? Kirigami.Theme.disabledTextColor
-                    : (meetItem.isSoon || meetItem.isNow)
-                      ? Kirigami.Theme.positiveTextColor
-                      : Kirigami.Theme.highlightColor
+            width:  10
+            height: 10
+            radius: 5
+            color: meetItem.isCurrent ? Kirigami.Theme.backgroundColor : meetItem.accentColor
+            border.width: 2
+            border.color: meetItem.accentColor
         }
 
         // Time range
@@ -80,6 +102,7 @@ Item {
                    : Kirigami.Theme.textColor
             font.strikeout: meetItem.isPast || meetItem.isCancelled || meetItem.isDeclined
             Layout.minimumWidth: Kirigami.Units.gridUnit * 5
+            Layout.alignment: Qt.AlignVCenter
         }
 
         // Title
@@ -91,13 +114,14 @@ Item {
             font.strikeout: meetItem.isPast || meetItem.isCancelled || meetItem.isDeclined
             elide: Text.ElideRight
             Layout.fillWidth: true
+            Layout.alignment: Qt.AlignVCenter
         }
 
         // Badge (Agora / em Xmin)
         Rectangle {
             visible: meetItem.badgeText !== ""
             width:   badgeLabel.implicitWidth + Kirigami.Units.smallSpacing * 2
-            height:  badgeLabel.implicitHeight + 2
+            height:  badgeLabel.implicitHeight + Kirigami.Units.smallSpacing
             radius:  height / 2
             color:   meetItem.isNow
                      ? Qt.rgba(Kirigami.Theme.positiveTextColor.r,
@@ -138,6 +162,7 @@ Item {
             opacity: meetItem.hovered ? 1 : 0
             spacing: 2
             Behavior on opacity { NumberAnimation { duration: 100 } }
+            Layout.alignment: Qt.AlignVCenter
 
             // Open Google Meet
             PlasmaComponents3.ToolButton {

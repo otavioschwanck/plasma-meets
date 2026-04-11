@@ -9,6 +9,7 @@ Item {
 
     property var model
     property var nextMeeting: null
+    property string nextMeetingEventId: ""
     property string lastSyncTime: ""
     property bool isSyncing: false
     property bool isAuthed: Plasmoid.configuration.accessToken !== ""
@@ -117,33 +118,64 @@ Item {
                 id: meetingList
                 model: fullRoot.model
                 clip: true
+                spacing: Kirigami.Units.smallSpacing
 
                 // Section headers (date groups)
                 section.property:  "dateLabel"
                 section.criteria:  ViewSection.FullString
                 section.delegate: Item {
                     width:  ListView.view.width
-                    height: sectionRow.implicitHeight + Kirigami.Units.smallSpacing * 2
+                    height: sectionCard.implicitHeight + Kirigami.Units.largeSpacing
 
-                    RowLayout {
-                        id: sectionRow
+                    Rectangle {
+                        id: sectionCard
                         anchors {
-                            left:  parent.left;  leftMargin:  Kirigami.Units.largeSpacing
-                            right: parent.right; rightMargin: Kirigami.Units.largeSpacing
-                            verticalCenter: parent.verticalCenter
+                            left: parent.left
+                            right: parent.right
+                            leftMargin: Kirigami.Units.largeSpacing
+                            rightMargin: Kirigami.Units.largeSpacing
+                            top: parent.top
+                            topMargin: Kirigami.Units.smallSpacing
                         }
-                        spacing: Kirigami.Units.smallSpacing
+                        implicitHeight: sectionRow.implicitHeight + Kirigami.Units.smallSpacing * 2
+                        radius: Kirigami.Units.cornerRadius
+                        color: Qt.rgba(Kirigami.Theme.highlightColor.r,
+                                       Kirigami.Theme.highlightColor.g,
+                                       Kirigami.Theme.highlightColor.b, 0.08)
+                        border.width: 1
+                        border.color: Qt.rgba(Kirigami.Theme.highlightColor.r,
+                                              Kirigami.Theme.highlightColor.g,
+                                              Kirigami.Theme.highlightColor.b, 0.16)
 
-                        PlasmaComponents3.Label {
-                            text: section
-                            font.bold: true
-                            font.pointSize: Kirigami.Theme.smallFont.pointSize
-                            color: Kirigami.Theme.disabledTextColor
-                        }
+                        RowLayout {
+                            id: sectionRow
+                            anchors {
+                                fill: parent
+                                leftMargin: Kirigami.Units.largeSpacing
+                                rightMargin: Kirigami.Units.largeSpacing
+                                topMargin: Kirigami.Units.smallSpacing
+                                bottomMargin: Kirigami.Units.smallSpacing
+                            }
+                            spacing: Kirigami.Units.smallSpacing
 
-                        Kirigami.Separator {
-                            Layout.fillWidth: true
-                            opacity: 0.4
+                            Rectangle {
+                                Layout.preferredWidth: 6
+                                Layout.preferredHeight: 6
+                                radius: 3
+                                color: Kirigami.Theme.highlightColor
+                            }
+
+                            PlasmaComponents3.Label {
+                                text: section
+                                font.bold: true
+                                font.pointSize: Kirigami.Theme.defaultFont.pointSize
+                                color: Kirigami.Theme.textColor
+                            }
+
+                            Kirigami.Separator {
+                                Layout.fillWidth: true
+                                opacity: 0.5
+                            }
                         }
                     }
                 }
@@ -151,6 +183,7 @@ Item {
                 // Meeting row delegate
                 delegate: MeetingItem {
                     width:        ListView.view.width
+                    eventId:      model.eventId
                     startTime:    model.startTime
                     endTime:      model.endTime
                     title:        model.title
@@ -160,6 +193,8 @@ Item {
                     isCancelled:  model.isCancelled
                     isDeclined:   model.isDeclined
                     minutesUntil: model.minutesUntil
+                    isCurrent:    model.dateLabel === i18n("Today")
+                                  && model.eventId === fullRoot.nextMeetingEventId
                 }
 
                 // Empty state (authed but no meetings)

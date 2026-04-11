@@ -11,6 +11,7 @@ PlasmoidItem {
     fullRepresentation: FullRepresentation {
         model: root.meetingsModel
         nextMeeting: root.nextMeeting
+        nextMeetingEventId: root.nextMeetingEventId
         lastSyncTime: root.lastSyncTime
         isSyncing: root.isSyncing
         isAuthed: root.accessToken !== ""
@@ -39,16 +40,6 @@ PlasmoidItem {
                     root.openNextMeeting()
                 else
                     root.expanded = !root.expanded
-            }
-
-            Rectangle {
-                anchors.fill: parent
-                radius: Kirigami.Units.cornerRadius
-                color: parent.containsMouse
-                       ? Qt.rgba(Kirigami.Theme.highlightColor.r,
-                                 Kirigami.Theme.highlightColor.g,
-                                 Kirigami.Theme.highlightColor.b, 0.15)
-                       : "transparent"
             }
 
             RowLayout {
@@ -105,6 +96,7 @@ PlasmoidItem {
 
     property bool   hasMeetingsToday: false
     property var    nextMeeting:      null   // plain object: { title, startTime, meetUrl }
+    property string nextMeetingEventId: ""
     property string lastSyncTime:     ""
     property bool   isSyncing:        false
 
@@ -254,6 +246,7 @@ PlasmoidItem {
         meetingsModel.clear()
         root.hasMeetingsToday = false
         root.nextMeeting = null
+        root.nextMeetingEventId = ""
     }
 
     // ── Token management ──────────────────────────────────────────────────────
@@ -408,6 +401,7 @@ PlasmoidItem {
                     && m.meetUrl !== ""
                     && (earliest === null || startMs < new Date(earliest.startIso).getTime())) {
                 earliest = {
+                    eventId: m.eventId,
                     title: m.title,
                     startTime: m.startTime,
                     meetUrl: m.meetUrl,
@@ -419,6 +413,7 @@ PlasmoidItem {
 
         root.hasMeetingsToday = todayUpcomingCount > 0
         root.nextMeeting = earliest
+        root.nextMeetingEventId = earliest ? earliest.eventId : ""
     }
 
     // ── Process API response → populate ListModel ─────────────────────────────
@@ -473,12 +468,14 @@ PlasmoidItem {
                     && meetUrl !== ""
                     && (earliest === null || startDt < new Date(earliest.startIso))) {
                 earliest = { title: ev.summary || "", startTime: root.formatHHMM(ev.start.dateTime),
-                             meetUrl: meetUrl, calUrl: calUrl, startIso: ev.start.dateTime }
+                             meetUrl: meetUrl, calUrl: calUrl, startIso: ev.start.dateTime,
+                             eventId: ev.id || String(i) }
             }
         }
 
         root.hasMeetingsToday = todayUpcomingCount > 0
         root.nextMeeting      = earliest
+        root.nextMeetingEventId = earliest ? earliest.eventId : ""
         root.refreshTimeSensitiveState()
         root.checkNotifications()
     }
