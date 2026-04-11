@@ -29,12 +29,24 @@ Requirements:
 
 - KDE Plasma 6
 - `bash`
+- `qdbus6` or `qdbus-qt6` (provided by `qt6-qttools`)
 - `msgfmt` optional, for compiling translations
 
-Install with:
+### Option 1: Script (recommended)
 
 ```bash
 ./install.sh
+```
+
+### Option 2: Import from file
+
+Download the latest `plasma-meets.plasmoid` from the [releases page](../../releases) and install it via:
+
+- KDE widget manager: right-click panel → `Add Widgets` → `Install from file` → select `plasma-meets.plasmoid`
+- Or via terminal:
+
+```bash
+kpackagetool6 --type Plasma/Applet --install plasma-meets.plasmoid
 ```
 
 Then:
