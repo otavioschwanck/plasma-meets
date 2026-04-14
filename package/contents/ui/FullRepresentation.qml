@@ -10,10 +10,11 @@ Item {
     property var model
     property var nextMeeting: null
     property string nextMeetingEventId: ""
+    property string nextMeetUrl: ""
     property string lastSyncTime: ""
     property bool isSyncing: false
     property bool isAuthed: false
-    readonly property bool hasNextMeetLink: !!(nextMeeting && nextMeeting.meetUrl)
+    readonly property bool hasNextMeetLink: nextMeetUrl !== ""
     signal refreshRequested()
 
     // Size hints — work for both popup and desktop widget
@@ -54,11 +55,11 @@ Item {
                 enabled: fullRoot.hasNextMeetLink
                 text: i18n("Open next Meet")
                 icon.name: "video-conference"
-                onClicked: Qt.openUrlExternally(fullRoot.nextMeeting.meetUrl)
+                onClicked: Qt.openUrlExternally(fullRoot.nextMeetUrl)
 
                 PlasmaComponents3.ToolTip {
                     text: fullRoot.hasNextMeetLink
-                          ? i18n("Open meeting at %1", fullRoot.nextMeeting.startTime)
+                          ? i18n("Open meeting at %1", fullRoot.nextMeeting ? fullRoot.nextMeeting.startTime : "")
                           : i18n("No upcoming meeting with a Google Meet link")
                 }
             }

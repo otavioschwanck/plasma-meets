@@ -12,6 +12,7 @@ PlasmoidItem {
         model: root.meetingsModel
         nextMeeting: root.nextMeeting
         nextMeetingEventId: root.nextMeetingEventId
+        nextMeetUrl: root.nextMeetUrl
         lastSyncTime: root.lastSyncTime
         isSyncing: root.isSyncing
         isAuthed: root.hasStoredAuth
@@ -97,6 +98,7 @@ PlasmoidItem {
     property bool   hasMeetingsToday: false
     property var    nextMeeting:      null   // plain object: { title, startTime, meetUrl }
     property string nextMeetingEventId: ""
+    property string nextMeetUrl:      ""     // meetUrl of first upcoming meeting today that has one
     property string lastSyncTime:     ""
     property bool   isSyncing:        false
 
@@ -120,8 +122,8 @@ PlasmoidItem {
     readonly property int    syncIntervalMin: Plasmoid.configuration.syncIntervalMin
 
     function openNextMeeting() {
-        if (root.nextMeeting && root.nextMeeting.meetUrl)
-            Qt.openUrlExternally(root.nextMeeting.meetUrl)
+        if (root.nextMeetUrl)
+            Qt.openUrlExternally(root.nextMeetUrl)
     }
 
     // ── Timers ────────────────────────────────────────────────────────────────
@@ -357,6 +359,7 @@ PlasmoidItem {
         var todayStr = new Date().toISOString().slice(0, 10)
         var todayUpcomingCount = 0
         var earliest = null
+        var earliestMeetUrl = ""
 
         for (var i = 0; i < meetingsModel.count; i++) {
             var m = meetingsModel.get(i)
@@ -378,7 +381,6 @@ PlasmoidItem {
                     && !isPast
                     && !m.isCancelled
                     && !m.isDeclined
-                    && m.meetUrl !== ""
                     && (earliest === null || startMs < new Date(earliest.startIso).getTime())) {
                 earliest = {
                     eventId: m.eventId,
@@ -389,11 +391,20 @@ PlasmoidItem {
                     startIso: m.startIso
                 }
             }
+            if (dateStr === todayStr
+                    && !isPast
+                    && !m.isCancelled
+                    && !m.isDeclined
+                    && m.meetUrl !== ""
+                    && earliestMeetUrl === "") {
+                earliestMeetUrl = m.meetUrl
+            }
         }
 
         root.hasMeetingsToday = todayUpcomingCount > 0
         root.nextMeeting = earliest
         root.nextMeetingEventId = earliest ? earliest.eventId : ""
+        root.nextMeetUrl = earliestMeetUrl
     }
 
     // ── Process API response → populate ListModel ─────────────────────────────
@@ -403,7 +414,8 @@ PlasmoidItem {
         var todayStr  = new Date().toISOString().slice(0, 10)
         var now       = Date.now()
         var todayUpcomingCount = 0
-        var earliest  = null   // next upcoming meeting with a Meet URL
+        var earliest  = null
+        var earliestMeetUrl = ""
 
         for (var i = 0; i < items.length; i++) {
             var ev = items[i]
@@ -440,22 +452,30 @@ PlasmoidItem {
                 minutesUntil: isPast ? -1 : minUntil
             })
 
-            // Track earliest upcoming meeting that has a video link
+            // Track earliest upcoming meeting
+            if (dateStr === todayStr
+                    && !isPast
+                    && !isCancelled
+                    && !isDeclined
+                    && (earliest === null || startDt < new Date(earliest.startIso))) {
+                earliest = { title: ev.summary || "", startTime: root.formatHHMM(ev.start.dateTime),
+                             meetUrl: meetUrl, calUrl: calUrl, startIso: ev.start.dateTime,
+                             eventId: ev.id || String(i) }
+            }
             if (dateStr === todayStr
                     && !isPast
                     && !isCancelled
                     && !isDeclined
                     && meetUrl !== ""
-                    && (earliest === null || startDt < new Date(earliest.startIso))) {
-                earliest = { title: ev.summary || "", startTime: root.formatHHMM(ev.start.dateTime),
-                             meetUrl: meetUrl, calUrl: calUrl, startIso: ev.start.dateTime,
-                             eventId: ev.id || String(i) }
+                    && earliestMeetUrl === "") {
+                earliestMeetUrl = meetUrl
             }
         }
 
         root.hasMeetingsToday = todayUpcomingCount > 0
         root.nextMeeting      = earliest
         root.nextMeetingEventId = earliest ? earliest.eventId : ""
+        root.nextMeetUrl      = earliestMeetUrl
         root.refreshTimeSensitiveState()
         root.checkNotifications()
     }
