@@ -159,6 +159,28 @@ PlasmoidItem {
         }
     }
 
+    // Retry loading secrets when the wallet is not ready at plasmoid startup
+    // (common on boot: plasmashell starts before kwalletd is unlocked).
+    Timer {
+        id: secretsRetryTimer
+        repeat: false
+        property int attempt: 0
+        readonly property var backoffMs: [2000, 5000, 10000, 20000, 30000, 60000]
+        onTriggered: root.loadSecureSecrets()
+        function schedule() {
+            if (attempt >= backoffMs.length)
+                return false
+            interval = backoffMs[attempt]
+            attempt += 1
+            start()
+            return true
+        }
+        function reset() {
+            attempt = 0
+            stop()
+        }
+    }
+
     function sendNotification(title, body) {
         if (secureHelper.item)
             secureHelper.item.notify(title, body)
@@ -176,18 +198,32 @@ PlasmoidItem {
     }
 
     function loadSecureSecrets() {
-        root._secretsLoaded = false
         root._accessToken = ""
-        root._refreshToken = ""
-        root._clientSecret = ""
         if (!secureHelper.item) {
+            root._secretsLoaded = false
+            root._refreshToken = ""
+            root._clientSecret = ""
             clearLegacySecrets()
             return
         }
 
-        secureHelper.item.readSecret("clientSecret", function(value) {
-            root._clientSecret = value
-            secureHelper.item.readSecret("refreshToken", function(refreshValue) {
+        secureHelper.item.readSecret("clientSecret", function(clientValue, clientData) {
+            var clientExit = secureHelper.item.exitCode(clientData)
+            if (clientExit === 2) {
+                // Wallet not ready yet — keep any previously loaded values and retry.
+                if (!secretsRetryTimer.schedule())
+                    console.warn("Plasma Meets: wallet still unavailable after retries; giving up until next restart.")
+                return
+            }
+            secureHelper.item.readSecret("refreshToken", function(refreshValue, refreshData) {
+                var refreshExit = secureHelper.item.exitCode(refreshData)
+                if (refreshExit === 2) {
+                    if (!secretsRetryTimer.schedule())
+                        console.warn("Plasma Meets: wallet still unavailable after retries; giving up until next restart.")
+                    return
+                }
+                secretsRetryTimer.reset()
+                root._clientSecret = clientValue
                 root._refreshToken = refreshValue
                 root._secretsLoaded = true
                 clearLegacySecrets()
