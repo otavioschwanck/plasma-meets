@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import org.kde.plasma.plasmoid
+import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.components 3.0 as PlasmaComponents3
 import org.kde.kirigami as Kirigami
 
@@ -26,11 +27,15 @@ PlasmoidItem {
         readonly property int    maxChars:    Plasmoid.configuration.titleMaxChars
         readonly property string iconNoMeet:  Plasmoid.configuration.iconNoMeet  || "meeting-attending-tentative"
         readonly property string iconHasMeet: Plasmoid.configuration.iconHasMeet || "meeting-attending"
+        readonly property bool   vertical:    Plasmoid.formFactor === PlasmaCore.Types.Vertical
+        readonly property int    iconSize:    vertical ? width : height
 
-        Layout.minimumWidth:  compactRow.implicitWidth + Kirigami.Units.smallSpacing * 2
-        Layout.minimumHeight: Kirigami.Units.iconSizes.smallMedium
-        implicitWidth:        compactRow.implicitWidth + Kirigami.Units.smallSpacing * 2
-        implicitHeight:       Kirigami.Units.iconSizes.smallMedium
+        Layout.fillWidth:     vertical
+        Layout.fillHeight:    !vertical
+        Layout.minimumWidth:  vertical ? 0 : compactRow.implicitWidth
+        Layout.minimumHeight: vertical ? compactRow.implicitHeight : 0
+        implicitWidth:        vertical ? iconSize : compactRow.implicitWidth
+        implicitHeight:       vertical ? iconSize : compactRow.implicitHeight
 
         MouseArea {
             anchors.fill: parent
@@ -50,8 +55,8 @@ PlasmoidItem {
 
                 Kirigami.Icon {
                     source: root.hasMeetingsToday ? compactRoot.iconHasMeet : compactRoot.iconNoMeet
-                    width:  Kirigami.Units.iconSizes.smallMedium
-                    height: Kirigami.Units.iconSizes.smallMedium
+                    Layout.preferredWidth:  compactRoot.iconSize
+                    Layout.preferredHeight: compactRoot.iconSize
                 }
 
                 PlasmaComponents3.Label {
