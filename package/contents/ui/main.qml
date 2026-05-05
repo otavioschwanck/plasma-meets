@@ -287,13 +287,30 @@ PlasmoidItem {
                     String(Math.floor(Date.now() / 1000) + d.expires_in - 60)
                 callback(d.access_token)
             } else {
-                // Refresh failed → need re-auth
                 root.isSyncing = false
-                root._accessToken = ""
-                root._refreshToken = ""
-                Plasmoid.configuration.tokenExpiry = "0"
-                if (secureHelper.item)
-                    secureHelper.item.clearSecret("refreshToken")
+                // Only clear credentials for definitive Google auth errors (invalid_grant,
+                // invalid_client). Transient failures (5xx, 429, network drop) must not
+                // destroy stored credentials — that's what caused silent logouts before.
+                var isAuthError = false
+                if (xhr.status === 400 || xhr.status === 401) {
+                    try {
+                        var errBody = JSON.parse(xhr.responseText)
+                        var errCode = errBody.error || ""
+                        isAuthError = (errCode === "invalid_grant" || errCode === "invalid_client")
+                    } catch (e) {
+                        isAuthError = (xhr.status === 401)
+                    }
+                }
+                if (isAuthError) {
+                    root._accessToken = ""
+                    root._refreshToken = ""
+                    Plasmoid.configuration.tokenExpiry = "0"
+                    if (secureHelper.item)
+                        secureHelper.item.clearSecret("refreshToken")
+                } else {
+                    console.warn("Plasma Meets: transient token refresh error (HTTP "
+                                 + xhr.status + "), keeping credentials")
+                }
             }
         }
         xhr.send("client_id=" + encodeURIComponent(Plasmoid.configuration.clientId) +
