@@ -4,6 +4,7 @@ import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.components 3.0 as PlasmaComponents3
 import org.kde.kirigami as Kirigami
+import org.kde.notification
 
 PlasmoidItem {
     id: root
@@ -186,9 +187,22 @@ PlasmoidItem {
         }
     }
 
+    // Persistent reminder notification — stays on screen until dismissed.
+    // Critical urgency + Persistent flag bypass DND and prevent auto-dismiss.
+    Notification {
+        id: meetingReminderNotif
+        componentName: "plasma_workspace"
+        eventId:       "notification"
+        iconName:      "appointment-reminder"
+        urgency:       Notification.CriticalUrgency
+        autoDelete:    false
+        flags:         Notification.Persistent
+    }
+
     function sendNotification(title, body) {
-        if (secureHelper.item)
-            secureHelper.item.notify(title, body)
+        meetingReminderNotif.title = String(title || "")
+        meetingReminderNotif.text  = String(body || "")
+        meetingReminderNotif.sendEvent()
     }
 
     function clearLegacySecrets() {
@@ -561,8 +575,11 @@ PlasmoidItem {
             var startMs  = new Date(m.startIso).getTime()
             var minLeft  = Math.round((startMs - now) / 60000)
 
-            // Notify when within [target-1, target] minutes (±1 min tolerance)
-            if (minLeft >= target - 1 && minLeft <= target) {
+            // Fire once meeting is within the configured window. The narrow
+            // `[target-1, target]` window used before could be skipped entirely
+            // by the 60s timer granularity. Dedup via _notifiedIds prevents
+            // re-firing for the same event.
+            if (minLeft > 0 && minLeft <= target) {
                 var ids = root._notifiedIds
                 ids[m.eventId] = true
                 root._notifiedIds = ids   // trigger binding update
